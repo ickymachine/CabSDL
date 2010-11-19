@@ -11,14 +11,12 @@
 #include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
-#include <SDL_image/SDL_image.h>
-#include <SDL/SDL.h>
+#include "SDL_image.h"
+#include "SDL.h"
 #include <string>
 #include <math.h>
 
 using namespace std;
-
-const char * location = "/Applications/Games/MAME/v138/titles/";
 
 GameImage::GameImage() {
 	
@@ -60,7 +58,7 @@ string GameImage::FindImageFile(string game) {
 	//Remove the file extension
 	string name = game.substr(0,game.find("."));
 	//add the location path to the name and append .png
-	return location+name+".png";
+	return name+".png";
 }
 
 SDL_Surface* GameImage::GetImage() {

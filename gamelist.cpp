@@ -42,6 +42,7 @@ int GameList::Initialize(string path) {
 			}
 		}
 		//Set the current current, next, previous games
+		games.sort();
 		_current = games.begin();
 		return 0;
 	}
@@ -55,7 +56,7 @@ string GameList::GetGame() {
 	
 	return *_current;
 }
-void GameList::MovePosition(uint num, int dir) {
+void GameList::MovePosition(int num, int dir) {
 	if (dir > 0) {
 		for (int i = 0; i < num; i++) {
 			if (_current == --games.end()) {

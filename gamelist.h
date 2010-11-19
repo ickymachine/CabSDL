@@ -18,7 +18,7 @@ public:
 	~GameList();
 	int Initialize(string path);	//generate the rom list based on the directory provided
 	string GetGame();
-	void MovePosition(uint num, int dir);
+	void MovePosition(int num, int dir);
 	void PrintList();
 private:
 	list<string> games;

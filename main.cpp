@@ -11,7 +11,7 @@
 #include <math.h>
 #include <iostream>
 
-#include <SDL_ttf/SDL_ttf.h>
+#include "SDL_ttf.h"
 #include "SDL.h"
 
 #include <string.h>
@@ -26,11 +26,16 @@ static GameChooser game_chooser;
 SDL_Surface *screen;
 static Locations location;
 
+static string GetImagePath() {
+	string out = location.GetImages()+game_list.GetGame();
+	return out;
+}
+
 static void UpdateDisplay() {
 	//Clear the display
 	SDL_FillRect(screen, NULL, 0x000000);
 	//Display the currently selected game
-	game_chooser.Update(game_list.GetGame());
+	game_chooser.Update(GetImagePath());
 	game_chooser.Display(screen);
 	//Update the screen
 	SDL_Flip(screen);

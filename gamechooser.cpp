@@ -9,7 +9,7 @@
 
 #include "gamechooser.h"
 #include <iostream>
-#include <SDL_ttf/SDL_ttf.h>
+#include "SDL_ttf.h"
 #include <dirent.h>
 
 GameChooser::GameChooser() {
@@ -55,7 +55,11 @@ void GameChooser::Display(SDL_Surface * display) {
 		cout<<"Failed to load font!"<<endl;
 	}
 	else {
-		if (!(text_surface = TTF_RenderText_Solid(font, game.GetName().c_str(), color))) {
+		//Generate the game name from the GameImage path string
+		string name = game.GetName();
+		name = name.substr(name.rfind("/")+1);
+		name = name.substr(0,name.find("."));
+		if (!(text_surface = TTF_RenderText_Solid(font, name.c_str(), color))) {
 			//Handle Error
 			cout<<"Couldn't create text_surface!"<<endl;
 		}
@@ -68,8 +72,8 @@ void GameChooser::Display(SDL_Surface * display) {
 	}
 }
 
-void GameChooser::Update(string gamename) {
-	game.GenerateImage(gamename);
+void GameChooser::Update(string gamepath) {
+	game.GenerateImage(gamepath);
 }
 
 void GameChooser::CloseFont() {

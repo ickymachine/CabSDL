@@ -7,8 +7,8 @@
  *
  */
 
-#include <SDL/SDL.h>
-#include <SDL_ttf/SDL_ttf.h>
+#include "SDL.h"
+#include "SDL_ttf.h"
 #include <list>
 
 #include "gameimage.h"
@@ -18,7 +18,7 @@ public:
 	GameChooser(); //default constructor
 	~GameChooser(); //default destructor
 	void Display(SDL_Surface * display);
-	void Update(string gamename);
+	void Update(string gamepath);
 	void InitFont(char* filename, int size);
 	void CloseFont();
 private:
