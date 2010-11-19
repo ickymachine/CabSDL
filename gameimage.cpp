@@ -12,9 +12,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <SDL_image/SDL_image.h>
+<<<<<<< HEAD
 #include "SDL.h"
 #include <string>
 #include <math.h>
+=======
+#include <string>
+>>>>>>> d8b522b21e89d85d310aa08577fdbc011e9507a2
 
 using namespace std;
 
@@ -46,11 +50,19 @@ void GameImage::GenerateImage(string game_name) {
 	//check if the image loading failed
 	if (image == NULL) {
 		//Load and display default image instead
+<<<<<<< HEAD
 		cout<<"ERROR; GameImage::GenerateImage; Couldn't load image at "<<filename<<endl;
 		image = LoadImageFile("default.png");
 		if (image == NULL) {
 			//couldn't load default for some reason
 			cout<<"ERROR; GameImage::Generate; Couldn't load default.png"<<endl;
+=======
+		cout<<"ERROR; GameImage::Display; Couldn't load image at "<<filename<<endl;
+		image = LoadImageFile("default.png");
+		if (image == NULL) {
+			//couldn't load default for some reason
+			cout<<"ERROR; GameImage::Display; Couldn't load default.png"<<endl;
+>>>>>>> d8b522b21e89d85d310aa08577fdbc011e9507a2
 			return;
 		}
 	}
@@ -70,6 +82,7 @@ SDL_Surface* GameImage::GetImage() {
 string GameImage::GetName() {
 	return name;
 }
+<<<<<<< HEAD
 
 void GameImage::ScaleImage(uint width, uint height) {
 	if (!width || !height || image->w == 0 || image->h == 0) {
@@ -196,3 +209,5 @@ SDL_Color GameImage::GetPixel(int x, int y) {
 	SDL_UnlockSurface(image);	
 	return color;
 }
+=======
+>>>>>>> d8b522b21e89d85d310aa08577fdbc011e9507a2
