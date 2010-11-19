@@ -12,17 +12,19 @@
 #include <iostream>
 
 #include <SDL_ttf/SDL_ttf.h>
-#include <SDL.h>
+#include "SDL.h"
 
 #include <string.h>
 #include "gamelist.h"
 #include "gameimage.h"
 #include "gamechooser.h"
+#include "locations.h"
 
 static string command;
 static GameList game_list;
 static GameChooser game_chooser;
 SDL_Surface *screen;
+static Locations location;
 
 static void UpdateDisplay() {
 	//Clear the display
@@ -57,7 +59,7 @@ static int HandleKeypress(SDL_Event event) {
 			UpdateDisplay();
 			break;
 		case SDLK_SPACE:
-			command = "/Applications/Games/MAME/sdlmame0140-x86_64/mame64 -rompath /Applications/Games/MAME/v138/roms "+game_list.GetGame();
+			command = location.GetCommand()+game_list.GetGame();
 			//Execute the command-line program
 			system(command.c_str());			
 			break;
@@ -77,8 +79,13 @@ int main(int argc, char *argv[])
 	SDL_Event event;
 	
 	//Initialize our variables
-	game_list.Initialize("/Applications/Games/MAME/v138/roms");
-	game_list.PrintList();
+//	location.SetGames("/Applications/Games/MAME/v138/roms");
+//	location.SetFonts("/Library/Fonts/Arial.ttf");
+//	location.SetCommand("/Applications/Games/MAME/sdlmame0140-x86_64/mame64 -rompath /Applications/Games/MAME/v138/roms ");
+	location.ParseConfig();
+	
+	game_list.Initialize(location.GetGames());
+//	game_list.PrintList();
 	command = "";
 
 	// Initial the SDL_TTF
@@ -89,7 +96,7 @@ int main(int argc, char *argv[])
 	}
 	
 	//Load the SDL font
-	game_chooser.InitFont("/Library/Fonts/Arial.ttf",16);
+	game_chooser.InitFont((char*)location.GetFonts().c_str(),16);
 	
 	/* Initialize the SDL library */
 	if ( SDL_Init(initflags) < 0 ) {
