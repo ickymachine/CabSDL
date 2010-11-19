@@ -9,10 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-<<<<<<< HEAD
 #include <iostream>
-=======
->>>>>>> d8b522b21e89d85d310aa08577fdbc011e9507a2
 
 #include "SDL.h"
 #include "SDL_ttf/SDL_ttf.h"
@@ -30,18 +27,8 @@ SDL_Surface *screen;
 static void UpdateDisplay() {
 	//Clear the display
 	SDL_FillRect(screen, NULL, 0x000000);
-<<<<<<< HEAD
 	//Display the currently selected game
 	game_chooser.Update(game_list.GetGame());
-=======
-	//Generate the current, next, and previous games
-	list<string> games;
-	games.push_back(game_list.GetGame(1,-1));
-	games.push_back(game_list.GetGame());
-	games.push_back(game_list.GetGame(1,1)); 
-	//Display the currently selected game
-	game_chooser.Update(games);
->>>>>>> d8b522b21e89d85d310aa08577fdbc011e9507a2
 	game_chooser.Display(screen);
 	//Update the screen
 	SDL_Flip(screen);
@@ -55,7 +42,6 @@ static int HandleKeypress(SDL_Event event) {
 			break;
 		case SDLK_LEFT:
 			game_list.MovePosition(1,-1);
-<<<<<<< HEAD
 			UpdateDisplay();
 			break;
 		case SDLK_RIGHT:
@@ -69,17 +55,6 @@ static int HandleKeypress(SDL_Event event) {
 		case SDLK_DOWN:
 			game_list.MovePosition(3,1);	
 			UpdateDisplay();
-=======
-			break;
-		case SDLK_RIGHT:
-			game_list.MovePosition(1,1);			
-			break;
-		case SDLK_UP:
-			game_list.MovePosition(3,-1);			
-			break;
-		case SDLK_DOWN:
-			game_list.MovePosition(3,1);			
->>>>>>> d8b522b21e89d85d310aa08577fdbc011e9507a2
 			break;
 		case SDLK_SPACE:
 			command = "/Applications/Games/MAME/sdlmame0140-x86_64/mame64 -rompath /Applications/Games/MAME/v138/roms "+game_list.GetGame();
@@ -90,10 +65,6 @@ static int HandleKeypress(SDL_Event event) {
 			// DO NOTHING 
 			break;
 	}
-<<<<<<< HEAD
-=======
-	UpdateDisplay();
->>>>>>> d8b522b21e89d85d310aa08577fdbc011e9507a2
 	return 0;
 }
 
@@ -107,13 +78,8 @@ int main(int argc, char *argv[])
 	
 	//Initialize our variables
 	game_list.Initialize("/Applications/Games/MAME/v138/roms");
-<<<<<<< HEAD
 	game_list.PrintList();
 	command = "";
-=======
-	command = "";
-	game_chooser.InitFont("/Library/Fonts/Arial.ttf",16);
->>>>>>> d8b522b21e89d85d310aa08577fdbc011e9507a2
 
 	// Initial the SDL_TTF
 	if (TTF_Init() < 0)
@@ -122,12 +88,9 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 	
-<<<<<<< HEAD
 	//Load the SDL font
 	game_chooser.InitFont("/Library/Fonts/Arial.ttf",16);
 	
-=======
->>>>>>> d8b522b21e89d85d310aa08577fdbc011e9507a2
 	/* Initialize the SDL library */
 	if ( SDL_Init(initflags) < 0 ) {
 		fprintf(stderr, "Couldn't initialize SDL: %s\n",
@@ -144,12 +107,9 @@ int main(int argc, char *argv[])
 		exit(2);
 	}
 	
-<<<<<<< HEAD
 	//Initial Screen Diplay
 //	UpdateDisplay();
 	
-=======
->>>>>>> d8b522b21e89d85d310aa08577fdbc011e9507a2
 	done = 0;
 	while ( !done ) {
 
@@ -173,12 +133,9 @@ int main(int argc, char *argv[])
 		}
 	}
 	
-<<<<<<< HEAD
 	//Make sure the game_chooser font is closed
 	game_chooser.CloseFont();
 	
-=======
->>>>>>> d8b522b21e89d85d310aa08577fdbc011e9507a2
 	/* Clean up the SDL library */
 	SDL_Quit();
 	TTF_Quit();
