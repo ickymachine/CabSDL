@@ -1,0 +1,2 @@
+TO BUILD ON UBUNTU WITH DEFAULT LIBRARY LOCATIONS
+ g++ -o cabsdl -lSDL -lSDL_ttf -lSDL_image -I /usr/include/SDL *.cpp
