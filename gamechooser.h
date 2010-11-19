@@ -7,8 +7,8 @@
  *
  */
 
-#include "SDL.h"
-#include "SDL_ttf/SDL_ttf.h"
+#include <SDL.h>
+#include <SDL_ttf/SDL_ttf.h>
 #include <list>
 
 #include "gameimage.h"

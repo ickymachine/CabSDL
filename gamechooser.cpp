@@ -9,8 +9,8 @@
 
 #include "gamechooser.h"
 #include <iostream>
-#include "SDL_ttf/SDL_ttf.h"
-#include "dirent.h"
+#include <SDL_ttf/SDL_ttf.h>
+#include <dirent.h>
 
 GameChooser::GameChooser() {
 	

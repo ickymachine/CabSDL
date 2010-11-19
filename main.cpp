@@ -11,8 +11,8 @@
 #include <math.h>
 #include <iostream>
 
-#include "SDL.h"
-#include "SDL_ttf/SDL_ttf.h"
+#include <SDL_ttf/SDL_ttf.h>
+#include <SDL.h>
 
 #include <string.h>
 #include "gamelist.h"

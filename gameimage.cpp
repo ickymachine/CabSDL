@@ -12,7 +12,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <SDL_image/SDL_image.h>
-#include "SDL.h"
+#include <SDL.h>
 #include <string>
 #include <math.h>
 
