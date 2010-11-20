@@ -20,6 +20,7 @@ public:
 	string GetGame();
 	void MovePosition(int num, int dir);
 	void PrintList();
+	void Search(string gamename);
 private:
 	list<string> games;
 	list<string>::iterator _current;

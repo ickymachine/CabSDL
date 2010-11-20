@@ -56,6 +56,7 @@ string GameList::GetGame() {
 	
 	return *_current;
 }
+
 void GameList::MovePosition(int num, int dir) {
 	if (dir > 0) {
 		for (int i = 0; i < num; i++) {
@@ -77,9 +78,28 @@ void GameList::MovePosition(int num, int dir) {
 		}
 	}
 }
+
 void GameList::PrintList() {
 	list<string>::iterator it;
 	for (it = games.begin(); it != games.end(); it++) {
 		cout<<*it<<endl;
 	}
+}
+
+void GameList::Search(string gamename) {
+	list<string>::iterator pos = games.begin();
+	int done = 0;
+	cout<<"GameList::Search; looking for "<<gamename<<endl;
+	while (pos != games.end() && done != 1) {
+		if ((pos->substr(0,gamename.size())).compare(gamename) == 0) {
+			//Found a match
+			done = 1;
+			//Move the iterator to the found game
+			_current = pos;
+			cout<<"GameList::Search; found entry"<<endl;
+		}
+		pos++;
+	}
+	//Didn't find the title
+	cout<<"GameList::Search; search over"<<endl;
 }
