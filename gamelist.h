@@ -7,6 +7,9 @@
  *
  */
 
+#ifndef GAMELIST_H
+#define GAMELIST_H
+
 #include <string>
 #include <list>
 
@@ -25,3 +28,5 @@ private:
 	list<string> games;
 	list<string>::iterator _current;
 };
+
+#endif

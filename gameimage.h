@@ -7,29 +7,25 @@
  *
  */
 
+#ifndef GAMEIMAGE_H
+#define GAMEIMAGE_H
+
 #include <stdio.h>
 #include "SDL.h"
 #include <string>
 
 using namespace std;
 
-#ifndef GAMEIMAGE
-#define GAMEIMAGE
-
 class GameImage {
 public:
-	GameImage();
-	~GameImage();
-	void GenerateImage(string game_name);
-	SDL_Surface* GetImage();
-	string GetName();
-	void ScaleImage(uint width, uint height);
+	static SDL_Surface* GenerateImage(string game_name);
+	static SDL_Surface* ScaleImage(SDL_Surface* image, int width, int height);
 private:
-	SDL_Surface* LoadImageFile(char * filename);
-	string FindImageFile(string game);
-	SDL_Surface* image;
-	string name;
-	SDL_Color GetPixel(int x, int y);
+//	SDL_Surface* LoadImageFile(char * filename);
+//	string FindImageFile(string game);
+//	SDL_Surface* image;
+//	string name;
+	static SDL_Color GetPixel(SDL_Surface* image, int x, int y);
 };
 
 #endif

@@ -7,6 +7,9 @@
  *
  */
 
+#ifndef LOCATIONS_H
+#define LOCATIONS_H
+
 #include <string>
 
 using namespace std;
@@ -15,19 +18,20 @@ class Locations {
 public: 
 	Locations();
 	~Locations();
-	Locations(string gname, string fname, string cname);
-	void SetGames(string name);
-	void SetFonts(string name);
-	void SetCommand(string name);
-	void SetImages(string name);
-	void ParseConfig();
+	int ParseConfig();
 	string GetGames();
-	string GetFonts();
+	string GetFont();
 	string GetCommand();
 	string GetImages();
 private:
+	void SetGames(string name);
+	void SetFont(string name);
+	void SetCommand(string name);
+	void SetImages(string name);
 	string games;
 	string images;
-	string fonts;
+	string font;
 	string command;
 };
+
+#endif

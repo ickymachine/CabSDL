@@ -21,9 +21,8 @@ GameList::GameList() {
 }
 
 GameList::~GameList() {
-//	delete current;
 	//Delete the game list 
-//	games.~list();
+	games.clear();
 }
 
 int GameList::Initialize(string path) {
@@ -37,7 +36,8 @@ int GameList::Initialize(string path) {
 		{
 			string entry (ent->d_name);
 			if (entry.find(".zip") != string::npos) {
-				games.push_back(entry);
+				//clip off the extension
+				games.push_back(entry.substr(0,entry.find(".zip")));
 //				cout <<"Added "<<ent->d_name<<" to GameList"<<endl;
 			}
 		}

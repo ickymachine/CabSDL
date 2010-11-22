@@ -14,20 +14,25 @@
 #include "SDL_ttf.h"
 #include "SDL.h"
 
-#include <string.h>
+#include <string>
 #include "gamelist.h"
 #include "gameimage.h"
-#include "gamechooser.h"
 #include "locations.h"
+#include "cabdisplay.h"
 
-static string command;
-static GameList game_list;
-static GameChooser game_chooser;
+using namespace std;
+
+//Globals
+string command;
+GameList game_list;
+//GameChooser game_chooser;
 SDL_Surface* screen;
-static Locations location;
+Locations location;
 TTF_Font* font;
-static string searchterm;
+string searchterm;
+//ConfigFile cfg;
 
+/*
 static void DisplayText(string text, SDL_Surface* display) {
 	SDL_Rect destination;
 	//Display the Rom name to the screen
@@ -52,6 +57,7 @@ static void DisplayText(string text, SDL_Surface* display) {
 	}
 	
 }
+*/
 
 static void EnterSearchTerm(SDL_KeyboardEvent* key) {
 	if( key->type == SDL_KEYDOWN ){
@@ -69,7 +75,10 @@ static string GetImagePath() {
 	return out;
 }
 
-static void UpdateDisplay() {
+
+
+static void Update() {
+/*
 	//Clear the display
 	SDL_FillRect(screen, NULL, 0x000000);
 	//Display the currently selected game
@@ -78,6 +87,16 @@ static void UpdateDisplay() {
 	DisplayText("SEARCH: "+searchterm,screen);
 	//Update the screen
 	SDL_Flip(screen);
+*/
+	CabDisplay::BlankDisplay(screen);
+	//Display the game image
+	CabDisplay::DisplayImage(GameImage::ScaleImage(GameImage::GenerateImage(GetImagePath()), 400, 400),screen);
+	//Display the game name
+	CabDisplay::DisplayText(game_list.GetGame(),font,screen,0,screen->h-20);
+	//Display the search term
+	CabDisplay::DisplayText("SEARCH: "+searchterm,font,screen, (screen->w/2), screen->h-20);
+	//Update the screen
+	CabDisplay::UpdateDisplay(screen);
 }
 
 static int HandleKeypress(SDL_Event event) {
@@ -89,40 +108,57 @@ static int HandleKeypress(SDL_Event event) {
 		case SDLK_LEFT:
 			game_list.MovePosition(1,-1);
 			searchterm = "";
-			UpdateDisplay();
+			Update();
 			break;
 		case SDLK_RIGHT:
 			game_list.MovePosition(1,1);
 			searchterm = "";
-			UpdateDisplay();
+			Update();
 			break;
 		case SDLK_UP:
 			game_list.MovePosition(3,-1);
 			searchterm = "";
-			UpdateDisplay();
+			Update();
 			break;
 		case SDLK_DOWN:
 			game_list.MovePosition(3,1);
 			searchterm = "";
-			UpdateDisplay();
+			Update();
 			break;
 		case SDLK_SPACE:
-			command = location.GetCommand()+game_list.GetGame();
+			command = location.GetCommand()+game_list.GetGame()+".zip";
 			searchterm = "";
 			//Execute the command-line program
 			system(command.c_str());			
 			break;
 		case SDLK_BACKSPACE:
 			searchterm = "";
-			UpdateDisplay();
+			Update();
 			break;
 		default:
 			//Assume search initiated
 			EnterSearchTerm(&event.key);
 			game_list.Search(searchterm);
-			UpdateDisplay();
+			Update();
 			break;
 	}
+	return 0;
+}
+
+static int Init() {
+	//Initialize our variables
+	//	location.SetGames("/Applications/Games/MAME/v138/roms");
+	//	location.SetFonts("/Library/Fonts/Arial.ttf");
+	//	location.SetCommand("/Applications/Games/MAME/sdlmame0140-x86_64/mame64 -rompath /Applications/Games/MAME/v138/roms ");
+	if (location.ParseConfig() == -1) {
+		cout<<"No valid config file, exiting program."<<endl;
+		exit(1);
+	}
+	
+	game_list.Initialize(location.GetGames());
+	//	game_list.PrintList();
+	command = "";
+	searchterm = "";
 	return 0;
 }
 
@@ -135,16 +171,8 @@ int main(int argc, char *argv[])
 	SDL_Event event;
 	
 	//Initialize our variables
-//	location.SetGames("/Applications/Games/MAME/v138/roms");
-//	location.SetFonts("/Library/Fonts/Arial.ttf");
-//	location.SetCommand("/Applications/Games/MAME/sdlmame0140-x86_64/mame64 -rompath /Applications/Games/MAME/v138/roms ");
-	location.ParseConfig();
+	Init();
 	
-	game_list.Initialize(location.GetGames());
-//	game_list.PrintList();
-	command = "";
-	searchterm = "";
-
 	// Initial the SDL_TTF
 	if (TTF_Init() < 0)
 	{
@@ -153,15 +181,14 @@ int main(int argc, char *argv[])
 	}
 	
 	//Load the SDL font
-	game_chooser.InitFont((char*)location.GetFonts().c_str(),16);
-	font = TTF_OpenFont((char*)location.GetFonts().c_str(),16);
+//	game_chooser.InitFont((char*)location.GetFonts().c_str(),16);
+	font = TTF_OpenFont((char*)location.GetFont().c_str(),16);
 	if (!font) {
 		printf("TTF_OpenFont: %s ",TTF_GetError());
 	}
 	else {
 		printf("Font loaded succesfully.\n");
 	}
-	
 	
 	/* Initialize the SDL library */
 	if ( SDL_Init(initflags) < 0 ) {
@@ -183,7 +210,7 @@ int main(int argc, char *argv[])
 	SDL_EnableUNICODE(1);
 	
 	//Initial Screen Diplay
-	UpdateDisplay();
+	Update();
 	
 	done = 0;
 	while ( !done ) {
@@ -191,7 +218,6 @@ int main(int argc, char *argv[])
 		/* Check for events */
 		while ( SDL_PollEvent(&event) ) {
 			switch (event.type) {
-
 				case SDL_MOUSEMOTION:
 					break;
 				case SDL_MOUSEBUTTONDOWN:
@@ -209,7 +235,6 @@ int main(int argc, char *argv[])
 	}
 	
 	//Make sure the game_chooser font is closed
-	game_chooser.CloseFont();
 	TTF_CloseFont(font);
 	
 	/* Clean up the SDL library */
