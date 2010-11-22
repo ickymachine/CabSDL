@@ -103,3 +103,14 @@ void GameList::Search(string gamename) {
 	//Didn't find the title
 	cout<<"GameList::Search; search over"<<endl;
 }
+
+list<string> GameList::GetList(int num) {
+	list<string>::iterator pos = _current;
+	list<string> return_list;
+	return_list.clear();
+	for (int i = 0; i < num; i++) {
+		return_list.push_back(*pos);
+		++pos;
+	}
+	return return_list;
+}

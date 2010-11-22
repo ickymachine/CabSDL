@@ -11,6 +11,7 @@
 #include "SDL_ttf.h"
 #include "SDL_image.h"
 #include <string>
+#include <list>
 
 #ifndef CABDISPLAY_H
 #define CABDISPLAY_H
@@ -23,6 +24,7 @@ public:
 	static int DisplayText(string text, TTF_Font* font, SDL_Surface* display, int x, int y);
 	static int BlankDisplay(SDL_Surface* display);
 	static int UpdateDisplay(SDL_Surface* display);
+	static int DisplayList(list<string> games, int selected, TTF_Font* font, SDL_Surface* display, int x, int y);
 };
 
 #endif

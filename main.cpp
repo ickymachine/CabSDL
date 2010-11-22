@@ -30,6 +30,8 @@ SDL_Surface* screen;
 Locations location;
 TTF_Font* font;
 string searchterm;
+int selectedgame;
+list<string> game_display_list;
 //ConfigFile cfg;
 
 /*
@@ -75,7 +77,33 @@ static string GetImagePath() {
 	return out;
 }
 
-
+static int UpdateDisplayList(SDL_keysym* key) {
+	//Check to see if list needs to be updated
+	if (selectedgame == 1 && key->sym == SDLK_LEFT) {
+		game_display_list = game_list.GetList(20);
+		selectedgame = 20;
+		cout<<"DISPLAY LIST WRAPPING BACK"<<endl;
+	}
+	else if (selectedgame == 20 && key->sym == SDLK_RIGHT) {
+		game_display_list = game_list.GetList(20);
+		selectedgame = 1;
+		cout<<"DISPLAY LIST WRAPPING FORWARD"<<endl;
+	}
+	else if (key->sym == SDLK_UP || key->sym == SDLK_DOWN) {
+		game_display_list = game_list.GetList(20);
+		selectedgame = 1;
+		cout<<"DISPLAY LIST JUMPING"<<endl;
+	}
+	else {
+		if (key->sym == SDLK_RIGHT) {
+			selectedgame++;
+		}
+		else if (key->sym == SDLK_LEFT) {
+			selectedgame--;
+		}
+	}
+	return 0;
+}
 
 static void Update() {
 /*
@@ -90,11 +118,13 @@ static void Update() {
 */
 	CabDisplay::BlankDisplay(screen);
 	//Display the game image
-	CabDisplay::DisplayImage(GameImage::ScaleImage(GameImage::GenerateImage(GetImagePath()), 400, 400),screen);
+	CabDisplay::DisplayImage(GameImage::ScaleImage(GameImage::GenerateImage(GetImagePath()), 500, 450),screen);
 	//Display the game name
-	CabDisplay::DisplayText(game_list.GetGame(),font,screen,0,screen->h-20);
+	CabDisplay::DisplayText(game_list.GetGame(),font,screen,5,screen->h-20);
 	//Display the search term
 	CabDisplay::DisplayText("SEARCH: "+searchterm,font,screen, (screen->w/2), screen->h-20);
+	//Display the list of games
+	CabDisplay::DisplayList(game_display_list,selectedgame,font,screen,screen->w-120, 5);
 	//Update the screen
 	CabDisplay::UpdateDisplay(screen);
 }
@@ -108,21 +138,25 @@ static int HandleKeypress(SDL_Event event) {
 		case SDLK_LEFT:
 			game_list.MovePosition(1,-1);
 			searchterm = "";
+			UpdateDisplayList(&event.key.keysym);
 			Update();
 			break;
 		case SDLK_RIGHT:
 			game_list.MovePosition(1,1);
 			searchterm = "";
+			UpdateDisplayList(&event.key.keysym);
 			Update();
 			break;
 		case SDLK_UP:
-			game_list.MovePosition(3,-1);
+			game_list.MovePosition(20,-1);
 			searchterm = "";
+			UpdateDisplayList(&event.key.keysym);
 			Update();
 			break;
 		case SDLK_DOWN:
-			game_list.MovePosition(3,1);
+			game_list.MovePosition(20,1);
 			searchterm = "";
+			UpdateDisplayList(&event.key.keysym);
 			Update();
 			break;
 		case SDLK_SPACE:
@@ -159,6 +193,8 @@ static int Init() {
 	//	game_list.PrintList();
 	command = "";
 	searchterm = "";
+	selectedgame = 1;
+	game_display_list = game_list.GetList(20);
 	return 0;
 }
 
