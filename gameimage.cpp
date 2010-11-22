@@ -86,7 +86,7 @@ SDL_Surface* GameImage::ScaleImage(SDL_Surface* image, int width, int height) {
 	
 	//Scale down both dimensions
 	if (stretchx < 1 && stretchy < 1) {
-		cout<<"Scaling down/down image "<<image->w<<" "<<image->h<<" by "<<stretchy<<","<<stretchx<<endl;
+//		cout<<"Scaling down/down image "<<image->w<<" "<<image->h<<" by "<<stretchy<<","<<stretchx<<endl;
 		int targetx = 0;
 		int targety = 0;
 		dest.w = 1;
@@ -116,7 +116,7 @@ SDL_Surface* GameImage::ScaleImage(SDL_Surface* image, int width, int height) {
 	}
 	//Scale down x, scale up y
 	else if (stretchx < 1) {
-		cout<<"Scaling down/up image "<<image->w<<" "<<image->h<<" by "<<stretchy<<","<<stretchx<<endl;
+//		cout<<"Scaling down/up image "<<image->w<<" "<<image->h<<" by "<<stretchy<<","<<stretchx<<endl;
 		int targetx = 0;
 		double xinc = static_cast<double>(image->w)/static_cast<double>(width);
 		dest.w = 1;
@@ -137,7 +137,7 @@ SDL_Surface* GameImage::ScaleImage(SDL_Surface* image, int width, int height) {
 	}
 	//Scaule up x, scale down y
 	else if (stretchy < 1) {
-		cout<<"Scaling up/down image "<<image->w<<" "<<image->h<<" by "<<stretchy<<","<<stretchx<<endl;
+//		cout<<"Scaling up/down image "<<image->w<<" "<<image->h<<" by "<<stretchy<<","<<stretchx<<endl;
 		int targety = 0;
 		double yinc = static_cast<double>(image->h)/static_cast<double>(height);
 		dest.h = 1;
@@ -158,7 +158,7 @@ SDL_Surface* GameImage::ScaleImage(SDL_Surface* image, int width, int height) {
 	}
 	//Scale up both dimensions
 	else {
-		cout<<"Scaling up/up image "<<image->w<<" "<<image->h<<" by "<<stretchy<<","<<stretchx<<endl;
+//		cout<<"Scaling up/up image "<<image->w<<" "<<image->h<<" by "<<stretchy<<","<<stretchx<<endl;
 		//Loop across the original image, drawing the scaled pixels
 		for (int y = 0; y < image->h; y++) {
 			dest.y = (static_cast<double>(y)*stretchy);

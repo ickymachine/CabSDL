@@ -80,27 +80,30 @@ static string GetImagePath() {
 static int UpdateDisplayList(SDL_keysym* key) {
 	//Check to see if list needs to be updated
 	if (selectedgame == 1 && key->sym == SDLK_LEFT) {
-		game_display_list = game_list.GetList(20);
+		game_display_list = game_list.GetList(-20);
 		selectedgame = 20;
-		cout<<"DISPLAY LIST WRAPPING BACK"<<endl;
+//		cout<<"DISPLAY LIST WRAPPING BACK"<<endl;
 	}
 	else if (selectedgame == 20 && key->sym == SDLK_RIGHT) {
 		game_display_list = game_list.GetList(20);
 		selectedgame = 1;
-		cout<<"DISPLAY LIST WRAPPING FORWARD"<<endl;
+//		cout<<"DISPLAY LIST WRAPPING FORWARD"<<endl;
 	}
 	else if (key->sym == SDLK_UP || key->sym == SDLK_DOWN) {
 		game_display_list = game_list.GetList(20);
 		selectedgame = 1;
-		cout<<"DISPLAY LIST JUMPING"<<endl;
+//		cout<<"DISPLAY LIST JUMPING"<<endl;
+	}
+	else if (key->sym == SDLK_RIGHT) {
+			selectedgame++;
+	}
+	else if (key->sym == SDLK_LEFT) {
+			selectedgame--;
 	}
 	else {
-		if (key->sym == SDLK_RIGHT) {
-			selectedgame++;
-		}
-		else if (key->sym == SDLK_LEFT) {
-			selectedgame--;
-		}
+		//Must have been a search
+		game_display_list = game_list.GetList(20);
+		selectedgame = 1;
 	}
 	return 0;
 }
@@ -159,11 +162,17 @@ static int HandleKeypress(SDL_Event event) {
 			UpdateDisplayList(&event.key.keysym);
 			Update();
 			break;
-		case SDLK_SPACE:
+		case SDLK_SPACE: {
 			command = location.GetCommand()+game_list.GetGame()+".zip";
 			searchterm = "";
+			//Switch out of fullscreen
+			screen = SDL_SetVideoMode(640,480, 0, SDL_SWSURFACE);
 			//Execute the command-line program
-			system(command.c_str());			
+			system(command.c_str());
+			//Switch back to fullscreen
+			screen = SDL_SetVideoMode(640,480, 0, SDL_SWSURFACE|SDL_FULLSCREEN);
+			Update();
+			}
 			break;
 		case SDLK_BACKSPACE:
 			searchterm = "";
@@ -173,6 +182,7 @@ static int HandleKeypress(SDL_Event event) {
 			//Assume search initiated
 			EnterSearchTerm(&event.key);
 			game_list.Search(searchterm);
+			UpdateDisplayList(&event.key.keysym);
 			Update();
 			break;
 	}
@@ -202,7 +212,7 @@ int main(int argc, char *argv[])
 {
 	Uint32 initflags = SDL_INIT_VIDEO;  /* See documentation for details */
 	Uint8  video_bpp = 0;
-	Uint32 videoflags = SDL_SWSURFACE;
+	Uint32 videoflags = SDL_SWSURFACE|SDL_FULLSCREEN;
 	int    done;
 	SDL_Event event;
 	

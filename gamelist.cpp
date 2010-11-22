@@ -14,6 +14,7 @@
 #include <string>
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
 GameList::GameList() {
 	games.clear();
@@ -105,12 +106,28 @@ void GameList::Search(string gamename) {
 }
 
 list<string> GameList::GetList(int num) {
-	list<string>::iterator pos = _current;
-	list<string> return_list;
-	return_list.clear();
-	for (int i = 0; i < num; i++) {
-		return_list.push_back(*pos);
-		++pos;
+	if (num > 0) {
+		list<string>::iterator pos = _current;
+		list<string> return_list;
+		return_list.clear();
+		for (int i = 0; i < num; i++) {
+			return_list.push_back(*pos);
+			++pos;
+		}
+		return return_list;
 	}
-	return return_list;
+	else {
+		int vel = abs(num);
+		list<string>::iterator pos = _current;
+		for (int i = 0; i < vel; i++) {
+			pos--;
+		}
+		list<string> return_list;
+		return_list.clear();
+		for (int i = 0; i < vel; i++) {
+			return_list.push_back(*pos);
+			++pos;
+		}
+		return return_list;
+	}
 }
