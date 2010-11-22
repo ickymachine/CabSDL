@@ -11,40 +11,10 @@
 #include <iostream>
 #include <fstream>
 
-//UNIX
-#if defined (__unix__)
-//Set Default Path to unix normal .config folder
-const char* CONFIG_PATH = "~/.config/cabsdl/config.xml"; // ~/.config/cabsdl/config.xml
-const char* CONFIG_PATH_LOCAL = "config.xml"; //Alternate location to look if normal config file is missing
-const char* GAME_PATH = "~/.cabsdl/roms/";
-const char* FONT = "/usr/share/fonts/truetype/msttcorefonts/Arial.ttf";
-const char* IMAGE_PATH = "~/.cabsdl/titles";
-const char* COMMAND = "/usr/games/mame";
-#endif
-
-
-//MAC
-#if defined (__APPLE__)
-const char* CONFIG_PATH = "~/.config/cabsdl/config.xml";
-const char* CONFIG_PATH_LOCAL = "config.xml"; //Alternate location to look if normal config file is missing
-const char* GAME_PATH = "~/.cabsdl/roms/";
-const char* FONT = "/Library/Fonts/Arial.ttf";
-const char* IMAGE_PATH = "~/.cabsdl/titles";
-const char* COMMAND = "mame";
-#endif
-
-//WINDOWS
-#if defined (_WIN32) || (WIN32) || (windows)
-const char* CONFIG_PATH = ".\\config\\config.xml";
-const char* GAME_PATH = ".\\roms";
-const char* FONT = "?";
-const char* IMAGE_PATH = ".\\titles";
-#endif 
-
 Locations::Locations() {
 	SetGames(GAME_PATH);
 	SetFont(FONT);
-	SetCommand(COMMAND);
+	SetCommand(PROGRAM);
 	SetImages(IMAGE_PATH);
 }
 

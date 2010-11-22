@@ -28,8 +28,8 @@ int CabDisplay::DisplayText(string text, TTF_Font* font, SDL_Surface* display, i
 			return -1;
 		}
 		else {
-			destination.x = x;
-			destination.y = y;
+			destination.x = x-(text_surface->w/2);
+			destination.y = y-(text_surface->h/2);
 			SDL_BlitSurface(text_surface, NULL, display, &destination);
 			SDL_FreeSurface(text_surface);
 		}
@@ -94,10 +94,11 @@ int CabDisplay::DisplayList(list<string> games, int selected, TTF_Font* font, SD
 				return -1;
 			}
 			else {
+				destination.x = x-text_surface->w;
 				SDL_BlitSurface(text_surface, NULL, display, &destination);
 				SDL_FreeSurface(text_surface);
 			}
-			destination.y = destination.y+20;
+			destination.y += text_surface->h;
 			games_pos++;
 			displaypos++;
 		}

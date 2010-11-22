@@ -10,6 +10,7 @@
 #include <string.h>
 #include <math.h>
 #include <iostream>
+#include <sstream>
 
 #include "SDL_ttf.h"
 #include "SDL.h"
@@ -20,19 +21,22 @@
 #include "locations.h"
 #include "cabdisplay.h"
 
+#include "configfile/configfile.h"
+
 using namespace std;
 
 //Globals
-string command;
 GameList game_list;
-//GameChooser game_chooser;
 SDL_Surface* screen;
 Locations location;
 TTF_Font* font;
 string searchterm;
 int selectedgame;
 list<string> game_display_list;
-//ConfigFile cfg;
+ConfigFile* cfg;
+Uint32 videoflags;
+int res_width;
+int res_height;
 
 /*
 static void DisplayText(string text, SDL_Surface* display) {
@@ -60,6 +64,39 @@ static void DisplayText(string text, SDL_Surface* display) {
 	
 }
 */
+
+static const char* ConstructExecutableCall() {
+	string call = "";
+	//First is the command
+	call+=location.GetCommand()+" ";
+	//Check if there are any parameters
+	int index = 0;
+	//Convert index to a string
+	std::ostringstream sin;
+	sin<<index;
+	string arg = "param"+sin.str();
+	cout<<arg<<endl;
+	string param = cfg->getvalue<string>(arg);
+	cout<<param<<endl;
+	while (param != "") {
+		call+=param+" ";
+		arg = "value"+sin.str();
+		cout<<arg<<endl;
+		//Check if there is an associated value
+		string value = cfg->getvalue<string>(arg);
+		if (value != "") {
+			call+=value+" ";
+		}
+		index++;
+		sin.str("");
+		sin<<index;
+		arg = "param"+sin.str();
+		param = cfg->getvalue<string>(arg);
+	}
+	//Add the game name to the end of the call
+	call+=game_list.GetGame()+".zip";
+	return call.c_str();
+}
 
 static void EnterSearchTerm(SDL_KeyboardEvent* key) {
 	if( key->type == SDL_KEYDOWN ){
@@ -109,25 +146,15 @@ static int UpdateDisplayList(SDL_keysym* key) {
 }
 
 static void Update() {
-/*
-	//Clear the display
-	SDL_FillRect(screen, NULL, 0x000000);
-	//Display the currently selected game
-	game_chooser.Update(GetImagePath());
-	game_chooser.Display(screen);
-	DisplayText("SEARCH: "+searchterm,screen);
-	//Update the screen
-	SDL_Flip(screen);
-*/
 	CabDisplay::BlankDisplay(screen);
 	//Display the game image
-	CabDisplay::DisplayImage(GameImage::ScaleImage(GameImage::GenerateImage(GetImagePath()), 500, 450),screen);
+	CabDisplay::DisplayImage(GameImage::ScaleImage(GameImage::GenerateImage(GetImagePath()),static_cast<int>(res_width*(0.85)), static_cast<int>(res_height*(0.90))),screen);
 	//Display the game name
-	CabDisplay::DisplayText(game_list.GetGame(),font,screen,5,screen->h-20);
+	CabDisplay::DisplayText(game_list.GetGame(),font,screen,(screen->w/10),screen->h-20);
 	//Display the search term
 	CabDisplay::DisplayText("SEARCH: "+searchterm,font,screen, (screen->w/2), screen->h-20);
 	//Display the list of games
-	CabDisplay::DisplayList(game_display_list,selectedgame,font,screen,screen->w-120, 5);
+	CabDisplay::DisplayList(game_display_list,selectedgame,font,screen,screen->w, 5);
 	//Update the screen
 	CabDisplay::UpdateDisplay(screen);
 }
@@ -163,14 +190,14 @@ static int HandleKeypress(SDL_Event event) {
 			Update();
 			break;
 		case SDLK_SPACE: {
-			command = location.GetCommand()+game_list.GetGame()+".zip";
 			searchterm = "";
 			//Switch out of fullscreen
-			screen = SDL_SetVideoMode(640,480, 0, SDL_SWSURFACE);
+			screen = SDL_SetVideoMode(res_width,res_height, 0, SDL_SWSURFACE);
 			//Execute the command-line program
-			system(command.c_str());
+			cout<<ConstructExecutableCall()<<endl;
+			system(ConstructExecutableCall());
 			//Switch back to fullscreen
-			screen = SDL_SetVideoMode(640,480, 0, SDL_SWSURFACE|SDL_FULLSCREEN);
+			screen = SDL_SetVideoMode(res_width,res_height, 0, videoflags);
 			Update();
 			}
 			break;
@@ -194,14 +221,38 @@ static int Init() {
 	//	location.SetGames("/Applications/Games/MAME/v138/roms");
 	//	location.SetFonts("/Library/Fonts/Arial.ttf");
 	//	location.SetCommand("/Applications/Games/MAME/sdlmame0140-x86_64/mame64 -rompath /Applications/Games/MAME/v138/roms ");
+
+	//Load the config file
+	cfg = new ConfigFile(CONFIG_PATH_LOCAL);
+	cfg->dump();
+	location.SetGames(cfg->getvalue<string>("game_path"));
+	location.SetFont(cfg->getvalue<string>("font_path"));
+	location.SetCommand(cfg->getvalue<string>("command"));
+	cout<<cfg->getvalue<string>("command")<<endl;
+	location.SetImages(cfg->getvalue<string>("image_path"));
+	
+	//Check if there are any settings for SDL
+	if (int h = cfg->getvalue<int>("height")) {
+		res_height = h;
+	}
+	if (int w = cfg->getvalue<int>("width")) {
+		res_width = w;
+	}
+	if (cfg->getvalue<string>("fullscreen") == "true") {
+		cout<<"VIDEOFLAGS "<<videoflags<<endl;
+		videoflags = videoflags|SDL_FULLSCREEN;
+		cout<<"SET FOR FULLSCREEN "<<videoflags<<endl;
+	}
+	
+	/*
 	if (location.ParseConfig() == -1) {
 		cout<<"No valid config file, exiting program."<<endl;
 		exit(1);
 	}
+	*/
 	
 	game_list.Initialize(location.GetGames());
 	//	game_list.PrintList();
-	command = "";
 	searchterm = "";
 	selectedgame = 1;
 	game_display_list = game_list.GetList(20);
@@ -212,7 +263,10 @@ int main(int argc, char *argv[])
 {
 	Uint32 initflags = SDL_INIT_VIDEO;  /* See documentation for details */
 	Uint8  video_bpp = 0;
-	Uint32 videoflags = SDL_SWSURFACE|SDL_FULLSCREEN;
+	videoflags = SDL_SWSURFACE;
+	res_width = 640;
+	res_height = 480;
+	
 	int    done;
 	SDL_Event event;
 	
@@ -227,8 +281,8 @@ int main(int argc, char *argv[])
 	}
 	
 	//Load the SDL font
-//	game_chooser.InitFont((char*)location.GetFonts().c_str(),16);
-	font = TTF_OpenFont((char*)location.GetFont().c_str(),16);
+	int fontsize = cfg->getvalue<int>("font_size");
+	font = TTF_OpenFont((char*)location.GetFont().c_str(),(fontsize > 0 ? fontsize:16));
 	if (!font) {
 		printf("TTF_OpenFont: %s ",TTF_GetError());
 	}
@@ -244,7 +298,7 @@ int main(int argc, char *argv[])
 	}
 
 	/* Set 640x480 video mode */
-	screen=SDL_SetVideoMode(640,480, video_bpp, videoflags);
+	screen=SDL_SetVideoMode(res_width,res_height, video_bpp, videoflags);
         if (screen == NULL) {
 		fprintf(stderr, "Couldn't set 640x480x%d video mode: %s\n",
                         video_bpp, SDL_GetError());
