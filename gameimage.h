@@ -26,6 +26,8 @@ private:
 //	SDL_Surface* image;
 //	string name;
 	static SDL_Color GetPixel(SDL_Surface* image, int x, int y);
+	static void DownloadImage(string file_name);
+	static size_t WriteData(void *ptr, size_t size, size_t nmemb, FILE *stream);
 };
 
 #endif

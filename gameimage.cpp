@@ -7,6 +7,7 @@
  *
  */
 
+#define CURL_STATICLIB
 #include "gameimage.h"
 #include <iostream>
 #include <stdio.h>
@@ -15,6 +16,10 @@
 #include "SDL.h"
 #include <string>
 #include <math.h>
+#include <curl/curl.h>
+#include <curl/types.h>
+#include <curl/easy.h>
+#include <fstream>
 
 using namespace std;
 /*
@@ -41,6 +46,14 @@ SDL_Surface* GameImage::GenerateImage(string game_name) {
 	SDL_Surface* image = NULL;
 	//Locate the proper image
 	string filename = game_name+".png";
+
+	// See if the image exists
+	ifstream game_image(filename.c_str());
+	if ( ! game_image.good()) {
+		GameImage::DownloadImage(game_name);
+	}
+	game_image.close();
+
 	//Load the desired image
 	image = IMG_Load((char*)filename.c_str());
 	//check if the image loading failed
@@ -192,6 +205,40 @@ SDL_Color GameImage::GetPixel(SDL_Surface* image, int x, int y) {
 	SDL_GetRGB(col, image->format, &color.r, &color.g, &color.b);
 //	SDL_GetRGB(*position, image->format, &color.r, &color.g, &color.b);
 	//Unlock the image
-	SDL_UnlockSurface(image);	
+	SDL_UnlockSurface(image);
 	return color;
+}
+
+/*
+ * Downloads a remote image from mamedb.com and saves it to the rom image path
+ *
+ * @return void
+ */
+void GameImage::DownloadImage(string file_name) {
+	string game_name;
+	game_name = file_name.substr(file_name.find_last_of("/")+1);
+
+	CURL *curl;
+	FILE *fp;
+	CURLcode res;
+	string url = "http://www.mamedb.com/titles/"+game_name+".png";
+	string outfilename = file_name+".png";
+	cout<<"INFO; attempting to download "<<url<<"..."<<endl;
+	curl = curl_easy_init();
+	if (curl) {
+		cout<<"INFO; downloading "<<url<<"..."<<endl;
+		fp = fopen(outfilename.c_str(), "wb");
+		curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, GameImage::WriteData);
+		curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
+		res = curl_easy_perform(curl);
+		curl_easy_cleanup(curl);
+		fclose(fp);
+	}
+}
+
+size_t GameImage::WriteData(void *ptr, size_t size, size_t nmemb, FILE *stream) {
+	size_t written;
+	written = fwrite(ptr, size, nmemb, stream);
+	return written;
 }
