@@ -233,7 +233,18 @@ void GameImage::DownloadImage(string file_name) {
 			curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
 			curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, GameImage::WriteData);
 			curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
+			curl_easy_setopt(curl, CURLOPT_VERBOSE, 1);
 			res = curl_easy_perform(curl);
+
+			long http_code = 0;
+			curl_easy_getinfo (curl, CURLINFO_RESPONSE_CODE, &http_code);
+
+			// If the transfer was bad, delete the crap file
+			if ( ! (http_code == 200 && res != CURLE_ABORTED_BY_CALLBACK))
+			{
+				remove(outfilename.c_str());
+			}
+
 			curl_easy_cleanup(curl);
 			fclose(fp);
 		}
