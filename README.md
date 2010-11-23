@@ -1,3 +1,16 @@
+# CabSDL
+
+CabSDL is a MAME frontend that is ideal for fullscreen applications, like your
+full-size cabinet or htpc application. It features an optional search, and will
+soon support easy filtering when a keyboard isn't available, like in a cabinet.
+
+# Features
+
+ * Automatic ROM detection
+ * Automatic ROM title thumbnail detection
+ * Automatic ROM title thumbnail download for missing titles
+ * Search functionality
+
 # Build Instructions:
 
 ## Ubuntu
