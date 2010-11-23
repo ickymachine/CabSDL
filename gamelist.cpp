@@ -39,7 +39,6 @@ int GameList::Initialize(string path) {
 			if (entry.find(".zip") != string::npos) {
 				//clip off the extension
 				games.push_back(entry.substr(0,entry.find(".zip")));
-//				cout <<"Added "<<ent->d_name<<" to GameList"<<endl;
 			}
 		}
 		//Set the current current, next, previous games
@@ -48,7 +47,7 @@ int GameList::Initialize(string path) {
 		return 0;
 	}
 	else {
-		cout << "Could not open: "<<path<<" for reading."<<endl;
+		cout << "GameList::Initialize; Could not open: "<<path<<" for reading."<<endl;
 	}	
 	return 1; //Assume failure
 }
@@ -97,12 +96,10 @@ void GameList::Search(string gamename) {
 			done = 1;
 			//Move the iterator to the found game
 			_current = pos;
-			cout<<"GameList::Search; found entry"<<endl;
 		}
 		pos++;
 	}
 	//Didn't find the title
-	cout<<"GameList::Search; search over"<<endl;
 }
 
 list<string> GameList::GetList(int num) {

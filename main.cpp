@@ -11,6 +11,7 @@
 #include <math.h>
 #include <iostream>
 #include <sstream>
+#include <fstream>
 
 #include "SDL_ttf.h"
 #include "SDL.h"
@@ -20,51 +21,48 @@
 #include "gameimage.h"
 #include "locations.h"
 #include "cabdisplay.h"
+#include "constants.h"
 
 #include "configfile/configfile.h"
 
 using namespace std;
 
+//GLOBALS
+extern const char* CONFIG_PATH;
+extern const char* CONFIG_PATH_LOCAL;
+extern const char* GAME_PATH;
+extern const char* FONT;
+extern const char* IMAGE_PATH;
+extern const char* PROGRAM;
+
 //Globals
 GameList game_list;
-SDL_Surface* screen;
 Locations location;
-TTF_Font* font;
 string searchterm;
 int selectedgame;
 list<string> game_display_list;
 ConfigFile* cfg;
+int display_list_size = 20;
+
+//SDL
+SDL_Surface* screen;
+TTF_Font* font;
+
+//Video Mode
 Uint32 videoflags;
 int res_width;
 int res_height;
-int display_list_size = 20;
 
-/*
-static void DisplayText(string text, SDL_Surface* display) {
-	SDL_Rect destination;
-	//Display the Rom name to the screen
-	SDL_Color color={255,255,255};	//White
-	SDL_Surface* text_surface;
-	//Check if the font loaded properly
-	if (font == NULL) {
-		cout<<"Failed to load font!"<<endl;
+static int FileExists(const char* path) {
+	ifstream check_file(path);
+	if (!check_file.good()) {
+		//File does not exist
+		check_file.close();
+		return 0;
 	}
-	else {
-		//Generate the game name from the GameImage path string
-		if (!(text_surface = TTF_RenderText_Solid(font, text.c_str(), color))) {
-			//Handle Error
-			cout<<"Couldn't create text_surface!"<<endl;
-		}
-		else {
-			destination.x = display->w/2;
-			destination.y = display->h-20;
-			SDL_BlitSurface(text_surface, NULL, display, &destination);
-			SDL_FreeSurface(text_surface);
-		}
-	}
-	
+	check_file.close();
+	return 1;
 }
-*/
 
 static const char* ConstructExecutableCall() {
 	string call = "";
@@ -105,7 +103,6 @@ static void EnterSearchTerm(SDL_KeyboardEvent* key) {
 		if( key->keysym.unicode < 0x80 && key->keysym.unicode > 0 ){
 			//Add the character to the search term
 			searchterm.push_back((char)key->keysym.unicode);
-			cout<<"Searching: "<<searchterm<<endl;
 		}
 	}
 }
@@ -120,17 +117,14 @@ static int UpdateDisplayList(SDL_keysym* key) {
 	if (selectedgame == 1 && key->sym == SDLK_LEFT) {
 		game_display_list = game_list.GetList(-display_list_size);
 		selectedgame = display_list_size;
-//		cout<<"DISPLAY LIST WRAPPING BACK"<<endl;
 	}
 	else if (selectedgame == display_list_size && key->sym == SDLK_RIGHT) {
 		game_display_list = game_list.GetList(display_list_size);
 		selectedgame = 1;
-//		cout<<"DISPLAY LIST WRAPPING FORWARD"<<endl;
 	}
 	else if (key->sym == SDLK_UP || key->sym == SDLK_DOWN) {
 		game_display_list = game_list.GetList(display_list_size);
 		selectedgame = 1;
-//		cout<<"DISPLAY LIST JUMPING"<<endl;
 	}
 	else if (key->sym == SDLK_RIGHT) {
 			selectedgame++;
@@ -195,7 +189,6 @@ static int HandleKeypress(SDL_Event event) {
 			//Switch out of fullscreen
 			screen = SDL_SetVideoMode(res_width,res_height, 0, SDL_SWSURFACE);
 			//Execute the command-line program
-			cout<<ConstructExecutableCall()<<endl;
 			system(ConstructExecutableCall());
 			//Switch back to fullscreen
 			screen = SDL_SetVideoMode(res_width,res_height, 0, videoflags);
@@ -217,20 +210,65 @@ static int HandleKeypress(SDL_Event event) {
 	return 0;
 }
 
-static int Init() {
-	//Initialize our variables
-	//	location.SetGames("/Applications/Games/MAME/v138/roms");
-	//	location.SetFonts("/Library/Fonts/Arial.ttf");
-	//	location.SetCommand("/Applications/Games/MAME/sdlmame0140-x86_64/mame64 -rompath /Applications/Games/MAME/v138/roms ");
+static int ProcessConfigFile() {
+	//Check if the default config file exists
+	if (!FileExists(CONFIG_PATH)) {
+		//Check the local path
+		if (!FileExists(CONFIG_PATH_LOCAL)) {
+			//No valid condif file found
+			cout<<"ERROR; No valid config file found at "<<CONFIG_PATH<<" or "<<CONFIG_PATH_LOCAL<<endl;
+			return 1;
+		}
+		else {
+			cfg = new ConfigFile(CONFIG_PATH_LOCAL);
+		}
+	}
+	else {
+		cfg = new ConfigFile(CONFIG_PATH);
+	}
+	//	cfg->dump();
+	
+	//Validate the values from the config file
+	if ( location.SetGames(cfg->getvalue<string>("game_path")) == -1) {
+		location.SetGames(GAME_PATH); //Set to default
+	}
+	if ( location.SetFont(cfg->getvalue<string>("font_path")) == -1) {
+		location.SetFont(FONT); //Set to default
+	}
+	if ( location.SetCommand(cfg->getvalue<string>("command")) == -1) {
+			location.SetCommand(PROGRAM); //Set to default
+	}
+	if ( location.SetImages(cfg->getvalue<string>("image_path")) == -1) {
+		location.SetImages(IMAGE_PATH); //Set to default
+	}
+		
+	if (!FileExists(location.GetGames().c_str())) {
+		cout<<"ERROR; Game directory"<<location.GetGames()<<" does not exist"<<endl;
+		return 0;
+	}
+	if (!FileExists(location.GetFont().c_str())) {
+		cout<<"ERROR; Font file "<<location.GetFont()<<" does not exist"<<endl;
+		return 0;
+	}
+	if (!FileExists(location.GetCommand().c_str())) {
+		cout<<"ERROR; Command file "<<location.GetCommand()<<" does not exist"<<endl;
+		return 0;
+	}
+	if (!FileExists(location.GetImages().c_str())) {
+		cout<<"ERROR; Images directory "<<location.GetImages()<<" does not exist"<<endl;
+		return 0;
+	}
+	
+	//Everything loaded successfully
+	return 1;
+}
 
-	//Load the config file
-	cfg = new ConfigFile(CONFIG_PATH_LOCAL);
-	cfg->dump();
-	location.SetGames(cfg->getvalue<string>("game_path"));
-	location.SetFont(cfg->getvalue<string>("font_path"));
-	location.SetCommand(cfg->getvalue<string>("command"));
-	cout<<cfg->getvalue<string>("command")<<endl;
-	location.SetImages(cfg->getvalue<string>("image_path"));
+static int Init() {
+	//Process the config file
+	if (!ProcessConfigFile()) {
+		cout<<"ERROR; Invalid Config file"<<endl;
+		return -1;
+	}
 	
 	//Check if there are any settings for SDL
 	if (int h = cfg->getvalue<int>("height")) {
@@ -240,27 +278,23 @@ static int Init() {
 		res_width = w;
 	}
 	if (cfg->getvalue<string>("fullscreen") == "true") {
-		cout<<"VIDEOFLAGS "<<videoflags<<endl;
 		videoflags = videoflags|SDL_FULLSCREEN;
-		cout<<"SET FOR FULLSCREEN "<<videoflags<<endl;
 	}
-	
-	/*
-	if (location.ParseConfig() == -1) {
-		cout<<"No valid config file, exiting program."<<endl;
-		exit(1);
-	}
-	*/
 	
 	game_list.Initialize(location.GetGames());
 	if (game_list.Size() < display_list_size) {
 		//limit display list to the size of the game list
 		display_list_size = game_list.Size();
 	}
-	//	game_list.PrintList();
 	searchterm = "";
 	selectedgame = 1;
 	game_display_list = game_list.GetList(display_list_size);
+	return 0;
+}
+
+static int Cleanup() {
+	//Delete pointers
+	delete cfg;
 	return 0;
 }
 
@@ -276,7 +310,10 @@ int main(int argc, char *argv[])
 	SDL_Event event;
 	
 	//Initialize our variables
-	Init();
+	if (Init() < 0) {
+		printf("Counldn't initialize CabSDL, exiting.");
+		exit(1);
+	}
 	
 	// Initial the SDL_TTF
 	if (TTF_Init() < 0)
@@ -290,9 +327,7 @@ int main(int argc, char *argv[])
 	font = TTF_OpenFont((char*)location.GetFont().c_str(),(fontsize > 0 ? fontsize:16));
 	if (!font) {
 		printf("TTF_OpenFont: %s ",TTF_GetError());
-	}
-	else {
-		printf("Font loaded succesfully.\n");
+		exit(1);
 	}
 	
 	/* Initialize the SDL library */
@@ -338,6 +373,9 @@ int main(int argc, char *argv[])
 			}
 		}
 	}
+	
+	//Run cleanup on any pointers
+	Cleanup();
 	
 	//Make sure the game_chooser font is closed
 	TTF_CloseFont(font);

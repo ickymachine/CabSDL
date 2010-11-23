@@ -7,60 +7,29 @@
  *
  */
 
-//UNIX
-#if defined (__unix__)
-//Set Default Path to unix normal .config folder
-#define CONFIG_PATH "~/.config/cabsdl/config.cfg" // ~/.config/cabsdl/config.cfg
-#define CONFIG_PATH_LOCAL "config.cfg" //Alternate location to look if normal config file is missing
-#define GAME_PATH "~/.cabsdl/roms/"
-#define FONT "/usr/share/fonts/truetype/msttcorefonts/Arial.ttf"
-#define IMAGE_PATH "~/.cabsdl/titles"
-#define PROGRAM "/usr/games/mame"
-#endif
-
-//MAC
-#if defined (__APPLE__)
-#define CONFIG_PATH "~/.config/cabsdl/config.cfg"
-#define CONFIG_PATH_LOCAL "config.cfg" //Alternate location to look if normal config file is missing
-#define GAME_PATH "~/.cabsdl/roms/"
-#define FONT "/Library/Fonts/Arial.ttf"
-#define IMAGE_PATH "~/.cabsdl/titles"
-#define PROGRAM "mame"
-#endif
-
-//WINDOWS
-#if defined (_WIN32) || (WIN32) || (windows)
-#define CONFIG_PATH ".\\config\\config.cfg"
-#define GAME_PATH ".\\roms"
-#define FONT "?"
-#define IMAGE_PATH ".\\titles"
-#endif 
+#include <string>
+#include "constants.h"
 
 #ifndef LOCATIONS_H
 #define LOCATIONS_H
-
-#include <string>
-
-using namespace std;
 
 class Locations {
 public: 
 	Locations();
 	~Locations();
-	int ParseConfig();
-	string GetGames();
-	string GetFont();
-	string GetCommand();
-	string GetImages();
-	void SetGames(string name);
-	void SetFont(string name);
-	void SetCommand(string name);
-	void SetImages(string name);
+	std::string GetGames();
+	std::string GetFont();
+	std::string GetCommand();
+	std::string GetImages();
+	int SetGames(std::string name);
+	int SetFont(std::string name);
+	int SetCommand(std::string name);
+	int SetImages(std::string name);
 private:
-	string games;
-	string images;
-	string font;
-	string command;
+	std::string games;
+	std::string images;
+	std::string font;
+	std::string command;
 };
 
 #endif

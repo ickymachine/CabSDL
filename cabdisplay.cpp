@@ -24,7 +24,7 @@ int CabDisplay::DisplayText(string text, TTF_Font* font, SDL_Surface* display, i
 		//Generate the game name from the GameImage path string
 		if (!(text_surface = TTF_RenderText_Solid(font, text.c_str(), color))) {
 			//Handle Error
-			cout<<"Couldn't create text_surface!"<<endl;
+			cout<<"CabDisplay::DisplayText; Couldn't create text_surface!"<<endl;
 			return -1;
 		}
 		else {
@@ -67,7 +67,7 @@ int CabDisplay::DisplayList(list<string> games, int selected, TTF_Font* font, SD
 	SDL_Surface* text_surface;
 	//Check if the font loaded properly
 	if (font == NULL) {
-		cout<<"Failed to load font!"<<endl;
+		cout<<"CabDisplay::DisplayList; Failed to load font!"<<endl;
 		return -1;
 	}
 	else {
@@ -90,7 +90,7 @@ int CabDisplay::DisplayList(list<string> games, int selected, TTF_Font* font, SD
 			//Generate the game name from the GameImage path string
 			if (!(text_surface = TTF_RenderText_Solid(font, games_pos->c_str(), *d_color))) {
 				//Handle Error
-				cout<<"Couldn't create text_surface!"<<endl;
+				cout<<"CabDisplay::DisplayList; Couldn't create text_surface!"<<endl;
 				return -1;
 			}
 			else {

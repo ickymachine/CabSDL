@@ -11,92 +11,68 @@
 #include <iostream>
 #include <fstream>
 
+//GLOBALS
+extern const char* CONFIG_PATH;
+extern const char* CONFIG_PATH_LOCAL;
+extern const char* GAME_PATH;
+extern const char* FONT;
+extern const char* IMAGE_PATH;
+extern const char* PROGRAM;
+
+using namespace std;
+
 Locations::Locations() {
-	SetGames(GAME_PATH);
-	SetFont(FONT);
-	SetCommand(PROGRAM);
-	SetImages(IMAGE_PATH);
+
 }
 
 Locations::~Locations() {
 	
 }
 
-void Locations::SetGames(string name) {
-	games = name;
+int Locations::SetGames(std::string name) {
+	if (name != "") {
+		games = name;
+		return 0;
+	}
+	return -1;
 }
 
-void Locations::SetFont(string name) {
-	font = name;
+int Locations::SetFont(std::string name) {
+	if (name != "") {
+		font = name;
+		return 0;
+	}
+	return -1;
 }
 
-void Locations::SetCommand(string name) {
-	command = name;
+int Locations::SetCommand(std::string name) {
+	if (name != "") {
+		command = name;
+		return 0;
+	}
+	return -1;
 }
 
-void Locations::SetImages(string name) {
-	images = name;
+int Locations::SetImages(std::string name) {
+	if (name != "") {
+		images = name;
+		return 0;
+	}
+	return -1;
 }
 
-string Locations::GetCommand() {
+std::string Locations::GetCommand() {
 	return command;
 }
 
-string Locations::GetFont() {
+std::string Locations::GetFont() {
 	return font;
 }
 
-string Locations::GetGames() {
+std::string Locations::GetGames() {
 	return games;
 }
 
-string Locations::GetImages() {
+std::string Locations::GetImages() {
 	return images;
-}
-
-int Locations::ParseConfig() {
-	//Try to open the config file
-	ifstream config (CONFIG_PATH);
-	if (config.is_open()) {
-		cout<<"Opened config file in default location"<<endl;
-		string line;
-		//First line is games directory
-		getline(config,line);
-		SetGames(line);
-		//Second line is fonts
-		getline(config,line);
-		SetFont(line);
-		//Third line is command
-		getline(config,line);
-		SetCommand(line);
-		//Fourth line is image directory
-		getline(config,line);
-		SetImages(line);
-		return 0;
-	}
-	//Couldn't open default path try file in local directory
-	else {
-		config.open(CONFIG_PATH_LOCAL);
-		if (config.is_open()) {
-			cout<<"Opened local config file"<<endl;
-			string line;
-			//First line is games directory
-			getline(config,line);
-			SetGames(line);
-			//Second line is fonts
-			getline(config,line);
-			SetFont(line);
-			//Third line is command
-			getline(config,line);
-			SetCommand(line);
-			//Fourth line is image directory
-			getline(config,line);
-			SetImages(line);
-			return 0;
-		}
-		else {
-			cout<<"No valid config file!"<<endl;
-			return -1;
-		}
-	}
 }
