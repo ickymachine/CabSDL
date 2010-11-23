@@ -25,6 +25,7 @@ public:
 	void MovePosition(int num, int dir);
 	void PrintList();
 	void Search(string gamename);
+	int Size();
 private:
 	list<string> games;
 	list<string>::iterator _current;

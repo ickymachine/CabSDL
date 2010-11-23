@@ -228,12 +228,18 @@ void GameImage::DownloadImage(string file_name) {
 	if (curl) {
 		cout<<"INFO; downloading "<<url<<"..."<<endl;
 		fp = fopen(outfilename.c_str(), "wb");
-		curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, GameImage::WriteData);
-		curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
-		res = curl_easy_perform(curl);
-		curl_easy_cleanup(curl);
-		fclose(fp);
+		cout<<"INFO; trying to open "<<outfilename<<" for file output"<<endl;
+		if (fp != NULL) {
+			curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+			curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, GameImage::WriteData);
+			curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
+			res = curl_easy_perform(curl);
+			curl_easy_cleanup(curl);
+			fclose(fp);
+		}
+		else {
+			cout<<"GameImage::DownloadImage; Couldn't open output file"<<endl;
+		}
 	}
 }
 

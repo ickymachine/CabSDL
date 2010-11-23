@@ -37,6 +37,7 @@ ConfigFile* cfg;
 Uint32 videoflags;
 int res_width;
 int res_height;
+int display_list_size = 20;
 
 /*
 static void DisplayText(string text, SDL_Surface* display) {
@@ -117,17 +118,17 @@ static string GetImagePath() {
 static int UpdateDisplayList(SDL_keysym* key) {
 	//Check to see if list needs to be updated
 	if (selectedgame == 1 && key->sym == SDLK_LEFT) {
-		game_display_list = game_list.GetList(-20);
-		selectedgame = 20;
+		game_display_list = game_list.GetList(-display_list_size);
+		selectedgame = display_list_size;
 //		cout<<"DISPLAY LIST WRAPPING BACK"<<endl;
 	}
-	else if (selectedgame == 20 && key->sym == SDLK_RIGHT) {
-		game_display_list = game_list.GetList(20);
+	else if (selectedgame == display_list_size && key->sym == SDLK_RIGHT) {
+		game_display_list = game_list.GetList(display_list_size);
 		selectedgame = 1;
 //		cout<<"DISPLAY LIST WRAPPING FORWARD"<<endl;
 	}
 	else if (key->sym == SDLK_UP || key->sym == SDLK_DOWN) {
-		game_display_list = game_list.GetList(20);
+		game_display_list = game_list.GetList(display_list_size);
 		selectedgame = 1;
 //		cout<<"DISPLAY LIST JUMPING"<<endl;
 	}
@@ -139,7 +140,7 @@ static int UpdateDisplayList(SDL_keysym* key) {
 	}
 	else {
 		//Must have been a search
-		game_display_list = game_list.GetList(20);
+		game_display_list = game_list.GetList(display_list_size);
 		selectedgame = 1;
 	}
 	return 0;
@@ -178,13 +179,13 @@ static int HandleKeypress(SDL_Event event) {
 			Update();
 			break;
 		case SDLK_UP:
-			game_list.MovePosition(20,-1);
+			game_list.MovePosition(display_list_size,-1);
 			searchterm = "";
 			UpdateDisplayList(&event.key.keysym);
 			Update();
 			break;
 		case SDLK_DOWN:
-			game_list.MovePosition(20,1);
+			game_list.MovePosition(display_list_size,1);
 			searchterm = "";
 			UpdateDisplayList(&event.key.keysym);
 			Update();
@@ -252,10 +253,14 @@ static int Init() {
 	*/
 	
 	game_list.Initialize(location.GetGames());
+	if (game_list.Size() < display_list_size) {
+		//limit display list to the size of the game list
+		display_list_size = game_list.Size();
+	}
 	//	game_list.PrintList();
 	searchterm = "";
 	selectedgame = 1;
-	game_display_list = game_list.GetList(20);
+	game_display_list = game_list.GetList(display_list_size);
 	return 0;
 }
 

@@ -131,3 +131,7 @@ list<string> GameList::GetList(int num) {
 		return return_list;
 	}
 }
+
+int GameList::Size() {
+	return games.size();
+}
