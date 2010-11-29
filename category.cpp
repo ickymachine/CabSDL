@@ -14,7 +14,10 @@
 Category::Category() {
 	//Zero out the map and list
 	game_categories.clear();
+	category_games.clear();
 	category_types.clear();
+	
+	category_types.push_back("ALL");
 	
 	//Load the category information from the local file categories.txt
 	std::ifstream catlist("categories.txt");
@@ -59,11 +62,17 @@ Category::Category() {
 		}
 		catlist.close();
 	}
+	//construct the reverse map
+	for (std::map<std::string,std::string>::iterator it = game_categories.begin(); it != game_categories.end(); it++) {
+		game_categories.insert(std::pair<std::string,std::string>(it->second,it->first));
+	}
 }
 
 Category::~Category() {
 	//Clear the map
 	game_categories.clear();
+	category_games.clear();
+	category_types.clear();
 }
 
 std::string Category::GetCategory(std::string gamename) {

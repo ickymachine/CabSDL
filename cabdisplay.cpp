@@ -110,8 +110,8 @@ int CabDisplay::DisplayList(list<string> games, int selected, TTF_Font* font, SD
 
 int CabDisplay::DisplayCategoryBox(list<string> categories, int selected, TTF_Font* font, SDL_Surface* display, int x, int y) {
 	//Setup the size of the dialog box
-	int height = 300;
-	int width = 400;
+	int height = 200;
+	int width = 200;
 	int xpos = x-width/2;
 	int ypos = y-height/2;
 	
@@ -126,16 +126,21 @@ int CabDisplay::DisplayCategoryBox(list<string> categories, int selected, TTF_Fo
 	SDL_FillRect(display, &destination, 0x000000);
 	
 	//Display the list of categories to the screen
-	//Only display 5 items from the list
+	//Only display 10 items from the list
 	list<string> catdisplay;
 	list<string>::iterator it = categories.begin();
-	for (int i = 0; i < 5; i++) {
+	advance(it,selected-1);
+	for (int i = 0; i < 10; i++) {
 		if (it != categories.end()) {
 			catdisplay.push_back(*it);
 			it++;
 		}
 	}
-	if (CabDisplay::DisplayList(catdisplay,selected,font,display,x,ypos+TTF_FontLineSkip(font)) == -1) {
+	
+	//Setup the positioning of the list
+	xpos = x+width/2-10;
+	ypos = y-width/2+10;
+	if (CabDisplay::DisplayList(catdisplay,1,font,display,xpos,ypos) == -1) {
 		//Error in displaying the list
 		return -1;
 	}

@@ -7,11 +7,12 @@
    
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <math.h>
 #include <iostream>
 #include <sstream>
 #include <fstream>
+#include <list>
+#include <string>
 
 #include "SDL_ttf.h"
 #include "SDL.h"
@@ -59,16 +60,21 @@ int x_search;
 int y_search;
 
 //Globals
-GameList game_list;
+GameList game_list_full;
+GameList game_list_sorted;
 Locations location;
+DisplayState status;
+Category categories;
+
+ConfigFile* cfg;
+
 string searchterm;
 int selectedgame;
 int selectedcategory;
 list<string> game_display_list;
-ConfigFile* cfg;
 int display_list_size = 20;
-Category categories;
-DisplayState status;
+
+
 
 //SDL
 SDL_Surface* screen;
@@ -119,7 +125,7 @@ static const char* ConstructExecutableCall() {
 		param = cfg->getvalue<string>(arg);
 	}
 	//Add the game name to the end of the call
-	call+=game_list.GetGame()+".zip";
+	call+=game_list_sorted.GetGame()+".zip";
 	return call.c_str();
 }
 
@@ -134,22 +140,22 @@ static void EnterSearchTerm(SDL_KeyboardEvent* key) {
 }
 
 static string GetImagePath() {
-	string out = location.GetImages()+game_list.GetGame();
+	string out = location.GetImages()+game_list_sorted.GetGame();
 	return out;
 }
 
 static int UpdateDisplayList(SDL_keysym* key) {
 	//Check to see if list needs to be updated
 	if (selectedgame == 1 && key->sym == SDLK_LEFT) {
-		game_display_list = game_list.GetList(-display_list_size);
+		game_display_list = game_list_sorted.GetList(-display_list_size);
 		selectedgame = display_list_size;
 	}
 	else if (selectedgame == display_list_size && key->sym == SDLK_RIGHT) {
-		game_display_list = game_list.GetList(display_list_size);
+		game_display_list = game_list_sorted.GetList(display_list_size);
 		selectedgame = 1;
 	}
 	else if (key->sym == SDLK_UP || key->sym == SDLK_DOWN) {
-		game_display_list = game_list.GetList(display_list_size);
+		game_display_list = game_list_sorted.GetList(display_list_size);
 		selectedgame = 1;
 	}
 	else if (key->sym == SDLK_RIGHT) {
@@ -160,35 +166,7 @@ static int UpdateDisplayList(SDL_keysym* key) {
 	}
 	else {
 		//Must have been a search
-		game_display_list = game_list.GetList(display_list_size);
-		selectedgame = 1;
-	}
-	return 0;
-}
-
-static int UpdateCategoryList(SDL_keysym* key) {
-	//Check to see if list needs to be updated
-	if (selectedgame == 1 && key->sym == SDLK_LEFT) {
-		game_display_list = game_list.GetList(-display_list_size);
-		selectedgame = display_list_size;
-	}
-	else if (selectedgame == display_list_size && key->sym == SDLK_RIGHT) {
-		game_display_list = game_list.GetList(display_list_size);
-		selectedgame = 1;
-	}
-	else if (key->sym == SDLK_UP || key->sym == SDLK_DOWN) {
-		game_display_list = game_list.GetList(display_list_size);
-		selectedgame = 1;
-	}
-	else if (key->sym == SDLK_RIGHT) {
-		selectedgame++;
-	}
-	else if (key->sym == SDLK_LEFT) {
-		selectedgame--;
-	}
-	else {
-		//Must have been a search
-		game_display_list = game_list.GetList(display_list_size);
+		game_display_list = game_list_sorted.GetList(display_list_size);
 		selectedgame = 1;
 	}
 	return 0;
@@ -201,9 +179,9 @@ static void Update() {
 			//Display the game image
 			CabDisplay::DisplayImage(GameImage::ScaleImage(GameImage::GenerateImage(GetImagePath()),static_cast<int>(res_width*(0.85)), static_cast<int>(res_height*(0.90))),screen, x_image, y_image);
 			//Display the game name
-			CabDisplay::DisplayText(game_list.GetGame(),font,screen,x_gamename,y_gamename);
+			CabDisplay::DisplayText(game_list_sorted.GetGame(),font,screen,x_gamename,y_gamename);
 			//Display the game category
-			CabDisplay::DisplayText(categories.GetCategory(game_list.GetGame()),font,screen,x_category,y_category);
+			CabDisplay::DisplayText(categories.GetCategory(game_list_sorted.GetGame()),font,screen,x_category,y_category);
 			//Display the search term
 			CabDisplay::DisplayText("SEARCH: "+searchterm,font,screen, x_search, y_search);
 			//Display the list of games
@@ -229,12 +207,12 @@ static int HandleKeypress(SDL_Event event) {
 		case SDLK_LEFT:
 			switch (status) {
 				case LIST:
-					game_list.MovePosition(1,-1);
+					game_list_sorted.MovePosition(1,-1);
 					searchterm = "";
 					UpdateDisplayList(&event.key.keysym);
 					break;
 				case SORT:
-					cout<<"SHOULD BE SORTING"<<endl;
+					selectedcategory--;
 					break;
 				default:
 					cout<<"DO NOTHING"<<endl;
@@ -245,12 +223,12 @@ static int HandleKeypress(SDL_Event event) {
 		case SDLK_RIGHT:
 			switch (status) {
 				case LIST:
-					game_list.MovePosition(1,1);
+					game_list_sorted.MovePosition(1,1);
 					searchterm = "";
 					UpdateDisplayList(&event.key.keysym);
 					break;
 				case SORT:
-					cout<<"SORT TO THE RIGHT"<<endl;
+					selectedcategory++;
 					break;
 				default:
 					break;
@@ -260,7 +238,7 @@ static int HandleKeypress(SDL_Event event) {
 		case SDLK_UP:
 			switch (status) {
 				case LIST:
-					game_list.MovePosition(display_list_size,-1);
+					game_list_sorted.MovePosition(display_list_size,-1);
 					searchterm = "";
 					UpdateDisplayList(&event.key.keysym);
 					break;
@@ -274,7 +252,7 @@ static int HandleKeypress(SDL_Event event) {
 		case SDLK_DOWN:
 			switch (status) {
 				case LIST:
-					game_list.MovePosition(display_list_size,1);
+					game_list_sorted.MovePosition(display_list_size,1);
 					searchterm = "";
 					UpdateDisplayList(&event.key.keysym);
 					break;
@@ -295,10 +273,19 @@ static int HandleKeypress(SDL_Event event) {
 					screen = SDL_SetVideoMode(res_width,res_height, 0, videoflags);
 					}
 					break;
-				case SORT:
+				case SORT:{
 					//Sort games by category
 					cout<<"Sort by the category"<<endl;
-					status = LIST;
+					list<string> available_categories;
+					available_categories = categories.List();
+					list<string>::iterator it = available_categories.begin();
+					advance(it,selectedcategory);
+					game_list_sorted = (game_list_full);
+					game_display_list = game_list_sorted.Sort(*it, &categories);
+					status = LIST;	
+					selectedcategory = 1;
+					}
+					break;
 				default:
 					break;
 			}
@@ -318,7 +305,7 @@ static int HandleKeypress(SDL_Event event) {
 			switch (status) {
 				case LIST:
 					EnterSearchTerm(&event.key);
-					game_list.Search(searchterm);
+					game_list_sorted.Search(searchterm);
 					UpdateDisplayList(&event.key.keysym);					
 					break;
 				case SORT:
@@ -437,14 +424,16 @@ static int Init() {
 	
 	display_list_size = res_height/TTF_FontLineSkip(font)-2;
 	
-	game_list.Initialize(location.GetGames());
-	if (game_list.Size() < display_list_size) {
+	game_list_full.Initialize(location.GetGames());
+	game_list_sorted.Copy(&game_list_full);
+	if (game_list_sorted.Size() < display_list_size) {
 		//limit display list to the size of the game list
-		display_list_size = game_list.Size();
+		display_list_size = game_list_sorted.Size();
 	}
 	searchterm = "";
 	selectedgame = 1;
-	game_display_list = game_list.GetList(display_list_size);
+	selectedcategory = 1;
+	game_display_list = game_list_full.GetList(display_list_size);
 	status = LIST;
 	
 	Uint32 initflags = SDL_INIT_VIDEO;  /* See documentation for details */

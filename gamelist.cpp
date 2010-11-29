@@ -15,9 +15,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include "category.h"
 
 GameList::GameList() {
 	games.clear();
+	_current = games.begin();
+}
+
+void GameList::Copy(GameList* copy) {
+	games.clear();
+	games = copy->GetList();
 	_current = games.begin();
 }
 
@@ -128,6 +135,26 @@ list<string> GameList::GetList(int num) {
 	}
 }
 
+list<string> GameList::GetList() {
+	list<string> rtn = games;
+	return rtn;
+}
+
 int GameList::Size() {
 	return games.size();
+}
+
+list<string> GameList::Sort(string category, Category* categories) {
+	list<string> rtn;
+	//Iterate through the entire list of games and add it to the return if it matches
+	for (list<string>::iterator it = games.begin(); it != games.end(); it++) {
+		if (category.compare(categories->GetCategory(*it)) == 0) {
+			rtn.push_back(*it);
+		}
+		else {
+			games.remove(*it);
+		}
+	}
+	_current = games.begin();
+	return rtn;
 }
