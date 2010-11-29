@@ -10,6 +10,7 @@
 #include "cabdisplay.h"
 #include <iostream>
 
+//x,y position is at the top left corner of the text
 int CabDisplay::DisplayText(string text, TTF_Font* font, SDL_Surface* display, int x, int y) {
 	SDL_Rect destination;
 	//Display the Rom name to the screen
@@ -28,8 +29,8 @@ int CabDisplay::DisplayText(string text, TTF_Font* font, SDL_Surface* display, i
 			return -1;
 		}
 		else {
-			destination.x = x-(text_surface->w/2);
-			destination.y = y-(text_surface->h/2);
+			destination.x = x;
+			destination.y = y;
 			SDL_BlitSurface(text_surface, NULL, display, &destination);
 			SDL_FreeSurface(text_surface);
 		}
@@ -43,12 +44,12 @@ int CabDisplay::UpdateDisplay(SDL_Surface* display) {
 	return 0;
 }
 
-int CabDisplay::DisplayImage(SDL_Surface* image, SDL_Surface* display) {
+int CabDisplay::DisplayImage(SDL_Surface* image, SDL_Surface* display, int x, int y) {
 	SDL_Rect destination;
 	//Blit the current game image to the screen
 	//try to center the image on the display
-	destination.x = 5;
-	destination.y = 5;
+	destination.x = x;
+	destination.y = y;
 	SDL_BlitSurface(image, NULL, display, &destination);	
 	SDL_FreeSurface(image);
 	return 0;
@@ -59,6 +60,7 @@ int CabDisplay::BlankDisplay(SDL_Surface* display) {
 	SDL_FillRect(display, NULL, 0x000000);
 	return 0;
 }
+
 
 int CabDisplay::DisplayList(list<string> games, int selected, TTF_Font* font, SDL_Surface* display, int x, int y) {
 	SDL_Rect destination;
@@ -98,10 +100,44 @@ int CabDisplay::DisplayList(list<string> games, int selected, TTF_Font* font, SD
 				SDL_BlitSurface(text_surface, NULL, display, &destination);
 				SDL_FreeSurface(text_surface);
 			}
-			destination.y += text_surface->h;
+			destination.y += TTF_FontLineSkip(font);
 			games_pos++;
 			displaypos++;
 		}
 	}
 	return 0;	
+}
+
+int CabDisplay::DisplayCategoryBox(list<string> categories, int selected, TTF_Font* font, SDL_Surface* display, int x, int y) {
+	//Setup the size of the dialog box
+	int height = 300;
+	int width = 400;
+	int xpos = x-width/2;
+	int ypos = y-height/2;
+	
+	//Create a black box for the dialog
+	SDL_Rect destination;
+	destination.x = xpos;
+	destination.y = ypos;
+	destination.w = width;
+	destination.h = height;
+	
+	//Create the dialog box
+	SDL_FillRect(display, &destination, 0x000000);
+	
+	//Display the list of categories to the screen
+	//Only display 5 items from the list
+	list<string> catdisplay;
+	list<string>::iterator it = categories.begin();
+	for (int i = 0; i < 5; i++) {
+		if (it != categories.end()) {
+			catdisplay.push_back(*it);
+			it++;
+		}
+	}
+	if (CabDisplay::DisplayList(catdisplay,selected,font,display,x,ypos+TTF_FontLineSkip(font)) == -1) {
+		//Error in displaying the list
+		return -1;
+	}
+	return 0;
 }

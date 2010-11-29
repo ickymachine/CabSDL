@@ -89,7 +89,6 @@ void GameList::PrintList() {
 void GameList::Search(string gamename) {
 	list<string>::iterator pos = games.begin();
 	int done = 0;
-	cout<<"GameList::Search; looking for "<<gamename<<endl;
 	while (pos != games.end() && done != 1) {
 		if ((pos->substr(0,gamename.size())).compare(gamename) == 0) {
 			//Found a match

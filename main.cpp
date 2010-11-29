@@ -22,6 +22,7 @@
 #include "locations.h"
 #include "cabdisplay.h"
 #include "constants.h"
+#include "category.h"
 
 #include "configfile/configfile.h"
 
@@ -35,23 +36,48 @@ extern const char* FONT;
 extern const char* IMAGE_PATH;
 extern const char* PROGRAM;
 
+//Create an enumerated type to indicate the state of the display
+enum DisplayState {
+	LIST,
+	SORT
+};
+
+//UI Element Positioning
+int x_image;
+int y_image;
+
+int x_list;
+int y_list;
+
+int x_gamename;
+int y_gamename;
+
+int x_category;
+int y_category;
+
+int x_search;
+int y_search;
+
 //Globals
 GameList game_list;
 Locations location;
 string searchterm;
 int selectedgame;
+int selectedcategory;
 list<string> game_display_list;
 ConfigFile* cfg;
 int display_list_size = 20;
+Category categories;
+DisplayState status;
 
 //SDL
 SDL_Surface* screen;
 TTF_Font* font;
 
 //Video Mode
-Uint32 videoflags;
-int res_width;
-int res_height;
+Uint32 videoflags = SDL_SWSURFACE;
+int res_width = 480;
+int res_height = 640;
 
 static int FileExists(const char* path) {
 	ifstream check_file(path);
@@ -76,11 +102,11 @@ static const char* ConstructExecutableCall() {
 	string arg = "param"+sin.str();
 	cout<<arg<<endl;
 	string param = cfg->getvalue<string>(arg);
-	cout<<param<<endl;
+//	cout<<param<<endl;
 	while (param != "") {
 		call+=param+" ";
 		arg = "value"+sin.str();
-		cout<<arg<<endl;
+//		cout<<arg<<endl;
 		//Check if there is an associated value
 		string value = cfg->getvalue<string>(arg);
 		if (value != "") {
@@ -140,17 +166,57 @@ static int UpdateDisplayList(SDL_keysym* key) {
 	return 0;
 }
 
+static int UpdateCategoryList(SDL_keysym* key) {
+	//Check to see if list needs to be updated
+	if (selectedgame == 1 && key->sym == SDLK_LEFT) {
+		game_display_list = game_list.GetList(-display_list_size);
+		selectedgame = display_list_size;
+	}
+	else if (selectedgame == display_list_size && key->sym == SDLK_RIGHT) {
+		game_display_list = game_list.GetList(display_list_size);
+		selectedgame = 1;
+	}
+	else if (key->sym == SDLK_UP || key->sym == SDLK_DOWN) {
+		game_display_list = game_list.GetList(display_list_size);
+		selectedgame = 1;
+	}
+	else if (key->sym == SDLK_RIGHT) {
+		selectedgame++;
+	}
+	else if (key->sym == SDLK_LEFT) {
+		selectedgame--;
+	}
+	else {
+		//Must have been a search
+		game_display_list = game_list.GetList(display_list_size);
+		selectedgame = 1;
+	}
+	return 0;
+}
+
 static void Update() {
-	CabDisplay::BlankDisplay(screen);
-	//Display the game image
-	CabDisplay::DisplayImage(GameImage::ScaleImage(GameImage::GenerateImage(GetImagePath()),static_cast<int>(res_width*(0.85)), static_cast<int>(res_height*(0.90))),screen);
-	//Display the game name
-	CabDisplay::DisplayText(game_list.GetGame(),font,screen,(screen->w/10),screen->h-20);
-	//Display the search term
-	CabDisplay::DisplayText("SEARCH: "+searchterm,font,screen, (screen->w/2), screen->h-20);
-	//Display the list of games
-	CabDisplay::DisplayList(game_display_list,selectedgame,font,screen,screen->w, 5);
-	//Update the screen
+	switch (status) {
+		case LIST:
+			CabDisplay::BlankDisplay(screen);
+			//Display the game image
+			CabDisplay::DisplayImage(GameImage::ScaleImage(GameImage::GenerateImage(GetImagePath()),static_cast<int>(res_width*(0.85)), static_cast<int>(res_height*(0.90))),screen, x_image, y_image);
+			//Display the game name
+			CabDisplay::DisplayText(game_list.GetGame(),font,screen,x_gamename,y_gamename);
+			//Display the game category
+			CabDisplay::DisplayText(categories.GetCategory(game_list.GetGame()),font,screen,x_category,y_category);
+			//Display the search term
+			CabDisplay::DisplayText("SEARCH: "+searchterm,font,screen, x_search, y_search);
+			//Display the list of games
+			CabDisplay::DisplayList(game_display_list,selectedgame,font,screen, x_list, y_list);			
+			break;
+		case SORT:
+			//Display the dialog
+			CabDisplay::DisplayCategoryBox(categories.List(),selectedcategory,font,screen,screen->w/2, screen->h/2);
+			break;
+		default:
+			break;
+	}
+	//Draw the screen
 	CabDisplay::UpdateDisplay(screen);
 }
 
@@ -161,49 +227,106 @@ static int HandleKeypress(SDL_Event event) {
 			return 1;
 			break;
 		case SDLK_LEFT:
-			game_list.MovePosition(1,-1);
-			searchterm = "";
-			UpdateDisplayList(&event.key.keysym);
+			switch (status) {
+				case LIST:
+					game_list.MovePosition(1,-1);
+					searchterm = "";
+					UpdateDisplayList(&event.key.keysym);
+					break;
+				case SORT:
+					cout<<"SHOULD BE SORTING"<<endl;
+					break;
+				default:
+					cout<<"DO NOTHING"<<endl;
+					break;
+			}
 			Update();
 			break;
 		case SDLK_RIGHT:
-			game_list.MovePosition(1,1);
-			searchterm = "";
-			UpdateDisplayList(&event.key.keysym);
+			switch (status) {
+				case LIST:
+					game_list.MovePosition(1,1);
+					searchterm = "";
+					UpdateDisplayList(&event.key.keysym);
+					break;
+				case SORT:
+					cout<<"SORT TO THE RIGHT"<<endl;
+					break;
+				default:
+					break;
+			}
 			Update();
 			break;
 		case SDLK_UP:
-			game_list.MovePosition(display_list_size,-1);
-			searchterm = "";
-			UpdateDisplayList(&event.key.keysym);
+			switch (status) {
+				case LIST:
+					game_list.MovePosition(display_list_size,-1);
+					searchterm = "";
+					UpdateDisplayList(&event.key.keysym);
+					break;
+				case SORT:
+					break;
+				default:
+					break;
+			}
 			Update();
 			break;
 		case SDLK_DOWN:
-			game_list.MovePosition(display_list_size,1);
-			searchterm = "";
-			UpdateDisplayList(&event.key.keysym);
+			switch (status) {
+				case LIST:
+					game_list.MovePosition(display_list_size,1);
+					searchterm = "";
+					UpdateDisplayList(&event.key.keysym);
+					break;
+				default:
+					break;
+			}
 			Update();
 			break;
-		case SDLK_SPACE: {
-			searchterm = "";
-			//Switch out of fullscreen
-			screen = SDL_SetVideoMode(res_width,res_height, 0, SDL_SWSURFACE);
-			//Execute the command-line program
-			system(ConstructExecutableCall());
-			//Switch back to fullscreen
-			screen = SDL_SetVideoMode(res_width,res_height, 0, videoflags);
-			Update();
+		case SDLK_SPACE:
+			switch (status) {
+				case LIST: {
+					searchterm = "";
+					//Switch out of fullscreen
+					screen = SDL_SetVideoMode(res_width,res_height, 0, SDL_SWSURFACE);
+					//Execute the command-line program
+					system(ConstructExecutableCall());
+					//Switch back to fullscreen
+					screen = SDL_SetVideoMode(res_width,res_height, 0, videoflags);
+					}
+					break;
+				case SORT:
+					//Sort games by category
+					cout<<"Sort by the category"<<endl;
+					status = LIST;
+				default:
+					break;
 			}
+			Update();
 			break;
 		case SDLK_BACKSPACE:
 			searchterm = "";
 			Update();
 			break;
+		case SDLK_TAB:
+			status = SORT;
+			cout<<"Hit the TAB key"<<endl;
+			Update();
+			break;
 		default:
 			//Assume search initiated
-			EnterSearchTerm(&event.key);
-			game_list.Search(searchterm);
-			UpdateDisplayList(&event.key.keysym);
+			switch (status) {
+				case LIST:
+					EnterSearchTerm(&event.key);
+					game_list.Search(searchterm);
+					UpdateDisplayList(&event.key.keysym);					
+					break;
+				case SORT:
+					EnterSearchTerm(&event.key);
+					break;
+				default:
+					break;
+			}
 			Update();
 			break;
 	}
@@ -270,6 +393,21 @@ static int Init() {
 		return -1;
 	}
 	
+	// Initial the SDL_TTF
+	if (TTF_Init() < 0)
+	{
+		printf("Couldn't initialize SDL TTF: %s\n", SDL_GetError());
+		exit(1);
+	}	
+	
+	//Load the SDL font
+	int fontsize = cfg->getvalue<int>("font_size");
+	font = TTF_OpenFont((char*)location.GetFont().c_str(),(fontsize > 0 ? fontsize:16));
+	if (!font) {
+		printf("TTF_OpenFont: %s ",TTF_GetError());
+		exit(1);
+	}
+	
 	//Check if there are any settings for SDL
 	if (int h = cfg->getvalue<int>("height")) {
 		res_height = h;
@@ -281,6 +419,24 @@ static int Init() {
 		videoflags = videoflags|SDL_FULLSCREEN;
 	}
 	
+	//Setup the positioning of the UI elements based on the resolution
+	x_image = res_width/50;
+	y_image = res_height/50;
+	
+	x_list = res_width-5;
+	y_list = 5;
+	
+	x_gamename = res_width/10;
+	y_gamename = res_height-fontsize-5;
+	
+	x_category = res_width/10*3;
+	y_category = res_height-fontsize-5;
+	
+	x_search = res_width/10*7;
+	y_search = res_height-fontsize-5;
+	
+	display_list_size = res_height/TTF_FontLineSkip(font)-2;
+	
 	game_list.Initialize(location.GetGames());
 	if (game_list.Size() < display_list_size) {
 		//limit display list to the size of the game list
@@ -289,6 +445,30 @@ static int Init() {
 	searchterm = "";
 	selectedgame = 1;
 	game_display_list = game_list.GetList(display_list_size);
+	status = LIST;
+	
+	Uint32 initflags = SDL_INIT_VIDEO;  /* See documentation for details */
+	Uint8  video_bpp = 0;
+	
+	/* Initialize the SDL library */
+	if ( SDL_Init(initflags) < 0 ) {
+		fprintf(stderr, "Couldn't initialize SDL: %s\n",
+				SDL_GetError());
+		exit(1);
+	}
+	
+	/* Set 640x480 video mode */
+	screen=SDL_SetVideoMode(res_width,res_height, video_bpp, videoflags);
+	if (screen == NULL) {
+		fprintf(stderr, "Couldn't set %d video mode: %s\n",
+				video_bpp, SDL_GetError());
+		SDL_Quit();
+		exit(2);
+	}
+	
+	//Enable Unicode Support
+	SDL_EnableUNICODE(1);
+	
 	return 0;
 }
 
@@ -300,54 +480,15 @@ static int Cleanup() {
 
 int main(int argc, char *argv[])
 {
-	Uint32 initflags = SDL_INIT_VIDEO;  /* See documentation for details */
-	Uint8  video_bpp = 0;
-	videoflags = SDL_SWSURFACE;
-	res_width = 640;
-	res_height = 480;
-	
 	int    done;
 	SDL_Event event;
-	
+
+		
 	//Initialize our variables
 	if (Init() < 0) {
 		printf("Counldn't initialize CabSDL, exiting.");
 		exit(1);
 	}
-	
-	// Initial the SDL_TTF
-	if (TTF_Init() < 0)
-	{
-		printf("Couldn't initialize SDL TTF: %s\n", SDL_GetError());
-		exit(1);
-	}
-	
-	//Load the SDL font
-	int fontsize = cfg->getvalue<int>("font_size");
-	font = TTF_OpenFont((char*)location.GetFont().c_str(),(fontsize > 0 ? fontsize:16));
-	if (!font) {
-		printf("TTF_OpenFont: %s ",TTF_GetError());
-		exit(1);
-	}
-	
-	/* Initialize the SDL library */
-	if ( SDL_Init(initflags) < 0 ) {
-		fprintf(stderr, "Couldn't initialize SDL: %s\n",
-			SDL_GetError());
-		exit(1);
-	}
-
-	/* Set 640x480 video mode */
-	screen=SDL_SetVideoMode(res_width,res_height, video_bpp, videoflags);
-        if (screen == NULL) {
-		fprintf(stderr, "Couldn't set 640x480x%d video mode: %s\n",
-                        video_bpp, SDL_GetError());
-		SDL_Quit();
-		exit(2);
-	}
-	
-	//Enable Unicode Support
-	SDL_EnableUNICODE(1);
 	
 	//Initial Screen Diplay
 	Update();
