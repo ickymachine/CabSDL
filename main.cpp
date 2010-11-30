@@ -145,17 +145,22 @@ static string GetImagePath() {
 }
 
 static int UpdateDisplayList(SDL_keysym* key) {
+	//Determine the proper list size
+	int size = display_list_size;
+	int small = game_list_sorted.Size();
+	if (small < display_list_size) size = small;
+	
 	//Check to see if list needs to be updated
 	if (selectedgame == 1 && key->sym == SDLK_LEFT) {
-		game_display_list = game_list_sorted.GetList(-display_list_size);
-		selectedgame = display_list_size;
+		game_display_list = game_list_sorted.GetList(-size);
+		selectedgame = size;
 	}
-	else if (selectedgame == display_list_size && key->sym == SDLK_RIGHT) {
-		game_display_list = game_list_sorted.GetList(display_list_size);
+	else if (selectedgame == game_list_sorted.Size() && key->sym == SDLK_RIGHT) {
+		game_display_list = game_list_sorted.GetList(size);
 		selectedgame = 1;
 	}
 	else if (key->sym == SDLK_UP || key->sym == SDLK_DOWN) {
-		game_display_list = game_list_sorted.GetList(display_list_size);
+		game_display_list = game_list_sorted.GetList(size);
 		selectedgame = 1;
 	}
 	else if (key->sym == SDLK_RIGHT) {
@@ -279,11 +284,19 @@ static int HandleKeypress(SDL_Event event) {
 					list<string> available_categories;
 					available_categories = categories.List();
 					list<string>::iterator it = available_categories.begin();
-					advance(it,selectedcategory);
-					game_list_sorted = (game_list_full);
-					game_display_list = game_list_sorted.Sort(*it, &categories);
+					advance(it,selectedcategory-1);
+					//Check if Category == ALL
+					if (it->compare("ALL") == 0) {
+						game_list_sorted = (game_list_full);
+						game_display_list = game_list_sorted.GetList(display_list_size);
+					}
+					else {
+						game_list_sorted = (game_list_full);
+						game_display_list = game_list_sorted.Sort(*it, &categories);
+					}
 					status = LIST;	
 					selectedcategory = 1;
+					selectedgame = 1;
 					}
 					break;
 				default:
@@ -484,9 +497,8 @@ int main(int argc, char *argv[])
 	
 	done = 0;
 	while ( !done ) {
-
 		/* Check for events */
-		while ( SDL_PollEvent(&event) ) {
+		if ( SDL_PollEvent(&event) ) {	//SDL_PollEvent(&event) ) {
 			switch (event.type) {
 				case SDL_MOUSEMOTION:
 					break;
@@ -502,6 +514,10 @@ int main(int argc, char *argv[])
 					break;
 			}
 		}
+		else {
+			SDL_Delay(1);
+		}
+
 	}
 	
 	//Run cleanup on any pointers

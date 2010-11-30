@@ -114,6 +114,7 @@ list<string> GameList::GetList(int num) {
 		list<string> return_list;
 		return_list.clear();
 		for (int i = 0; i < num; i++) {
+			if (pos == games.end()) pos = games.begin();
 			return_list.push_back(*pos);
 			++pos;
 		}
@@ -123,11 +124,17 @@ list<string> GameList::GetList(int num) {
 		int vel = abs(num);
 		list<string>::iterator pos = _current;
 		for (int i = 0; i < vel; i++) {
-			pos--;
+			if (pos == games.begin()) {
+				pos = games.end();
+			}
+			else {
+				pos--;
+			}
 		}
 		list<string> return_list;
 		return_list.clear();
 		for (int i = 0; i < vel; i++) {
+			if (pos == games.end()) pos = games.begin();
 			return_list.push_back(*pos);
 			++pos;
 		}
