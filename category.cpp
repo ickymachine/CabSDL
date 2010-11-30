@@ -30,6 +30,10 @@ Category::Category() {
 		std::string line;
 		while (catlist.good()) {
 			getline(catlist,line);
+			
+			//Check if the line is empty/newline
+			if (line.compare("\n") == 0) continue;
+			
 			std::string game = line.substr(0,line.find("="));
 			int pos = line.find("=");
 			std::string cat = line.substr(pos+1,line.length()-2-pos);
@@ -55,8 +59,10 @@ Category::Category() {
 				}
 				if (found == 0) {
 					//The category was not found so add it to the list
-					category_types.push_back(cat);
-//					std::cout<<"Adding "<<cat<<" to list"<<std::endl;
+					if (cat.length() > 0) {
+						category_types.push_back(cat);
+//						std::cout<<"Adding "<<cat<<" to list"<<std::endl;
+					}
 				}
 			}
 		}
@@ -64,7 +70,7 @@ Category::Category() {
 	}
 	//construct the reverse map
 	for (std::map<std::string,std::string>::iterator it = game_categories.begin(); it != game_categories.end(); it++) {
-		game_categories.insert(std::pair<std::string,std::string>(it->second,it->first));
+		category_games.insert(std::pair<std::string,std::string>(it->second,it->first));
 	}
 }
 
@@ -91,4 +97,24 @@ std::string Category::GetCategory(std::string gamename) {
 
 std::list<std::string> Category::List() {
 	return category_types;
+}
+
+void Category::Print() {
+	for (std::list<std::string>::iterator i = category_types.begin(); i != category_types.end(); i++) {
+		std::cout<<*i<<std::endl;
+	}
+}
+
+std::list<std::string> Category::GetMatches(std::string category) {
+	//Find the range of elements that match the category
+	std::pair<std::multimap<std::string,std::string>::iterator,std::multimap<std::string,std::string>::iterator> range;
+	range = category_games.equal_range(category);
+	//Push the values into a return list
+	std::list<std::string> rtn;
+	rtn.clear();
+	for (std::multimap<std::string,std::string>::iterator i = range.first; i != range.second; i++) {
+		rtn.push_back((*i).second);
+		std::cout<<(*i).second<<std::endl;
+	}
+	return rtn;
 }

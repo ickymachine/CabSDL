@@ -60,8 +60,7 @@ int x_search;
 int y_search;
 
 //Globals
-GameList game_list_full;
-GameList game_list_sorted;
+GameList game_list;
 Locations location;
 DisplayState status;
 Category categories;
@@ -73,8 +72,6 @@ int selectedgame;
 int selectedcategory;
 list<string> game_display_list;
 int display_list_size = 20;
-
-
 
 //SDL
 SDL_Surface* screen;
@@ -108,11 +105,9 @@ static const char* ConstructExecutableCall() {
 	string arg = "param"+sin.str();
 	cout<<arg<<endl;
 	string param = cfg->getvalue<string>(arg);
-//	cout<<param<<endl;
 	while (param != "") {
 		call+=param+" ";
 		arg = "value"+sin.str();
-//		cout<<arg<<endl;
 		//Check if there is an associated value
 		string value = cfg->getvalue<string>(arg);
 		if (value != "") {
@@ -125,7 +120,7 @@ static const char* ConstructExecutableCall() {
 		param = cfg->getvalue<string>(arg);
 	}
 	//Add the game name to the end of the call
-	call+=game_list_sorted.GetGame()+".zip";
+	call+=game_list.GetGame()+".zip";
 	return call.c_str();
 }
 
@@ -140,28 +135,28 @@ static void EnterSearchTerm(SDL_KeyboardEvent* key) {
 }
 
 static string GetImagePath() {
-	string out = location.GetImages()+game_list_sorted.GetGame();
+	string out = location.GetImages()+game_list.GetGame();
 	return out;
 }
 
 static int UpdateDisplayList(SDL_keysym* key) {
 	//Determine the proper list size
 	int size = display_list_size;
-	int small = game_list_sorted.Size();
+	int small = game_list.Size();
 	if (small < display_list_size) size = small;
 	
 	//Check to see if list needs to be updated
-	if (selectedgame == 1 && key->sym == SDLK_LEFT) {
-		game_display_list = game_list_sorted.GetList(-size);
-		selectedgame = size;
+	if (selectedgame == 0 && key->sym == SDLK_LEFT) {
+		game_display_list = game_list.GetList(-size);
+		selectedgame = size-1;
 	}
-	else if (selectedgame == game_list_sorted.Size() && key->sym == SDLK_RIGHT) {
-		game_display_list = game_list_sorted.GetList(size);
-		selectedgame = 1;
+	else if (selectedgame == size-1 && key->sym == SDLK_RIGHT) {
+		game_display_list = game_list.GetList(size);
+		selectedgame = 0;
 	}
 	else if (key->sym == SDLK_UP || key->sym == SDLK_DOWN) {
-		game_display_list = game_list_sorted.GetList(size);
-		selectedgame = 1;
+		game_display_list = game_list.GetList(size);
+		selectedgame = 0;
 	}
 	else if (key->sym == SDLK_RIGHT) {
 			selectedgame++;
@@ -171,8 +166,8 @@ static int UpdateDisplayList(SDL_keysym* key) {
 	}
 	else {
 		//Must have been a search
-		game_display_list = game_list_sorted.GetList(display_list_size);
-		selectedgame = 1;
+		game_display_list = game_list.GetList(display_list_size);
+		selectedgame = 0;
 	}
 	return 0;
 }
@@ -184,9 +179,9 @@ static void Update() {
 			//Display the game image
 			CabDisplay::DisplayImage(GameImage::ScaleImage(GameImage::GenerateImage(GetImagePath()),static_cast<int>(res_width*(0.85)), static_cast<int>(res_height*(0.90))),screen, x_image, y_image);
 			//Display the game name
-			CabDisplay::DisplayText(game_list_sorted.GetGame(),font,screen,x_gamename,y_gamename);
+			CabDisplay::DisplayText(game_list.GetGame(),font,screen,x_gamename,y_gamename);
 			//Display the game category
-			CabDisplay::DisplayText(categories.GetCategory(game_list_sorted.GetGame()),font,screen,x_category,y_category);
+			CabDisplay::DisplayText(categories.GetCategory(game_list.GetGame()),font,screen,x_category,y_category);
 			//Display the search term
 			CabDisplay::DisplayText("SEARCH: "+searchterm,font,screen, x_search, y_search);
 			//Display the list of games
@@ -212,7 +207,7 @@ static int HandleKeypress(SDL_Event event) {
 		case SDLK_LEFT:
 			switch (status) {
 				case LIST:
-					game_list_sorted.MovePosition(1,-1);
+					game_list.MovePosition(-1);
 					searchterm = "";
 					UpdateDisplayList(&event.key.keysym);
 					break;
@@ -228,7 +223,7 @@ static int HandleKeypress(SDL_Event event) {
 		case SDLK_RIGHT:
 			switch (status) {
 				case LIST:
-					game_list_sorted.MovePosition(1,1);
+					game_list.MovePosition(1);
 					searchterm = "";
 					UpdateDisplayList(&event.key.keysym);
 					break;
@@ -243,7 +238,7 @@ static int HandleKeypress(SDL_Event event) {
 		case SDLK_UP:
 			switch (status) {
 				case LIST:
-					game_list_sorted.MovePosition(display_list_size,-1);
+					game_list.MovePosition(-display_list_size);
 					searchterm = "";
 					UpdateDisplayList(&event.key.keysym);
 					break;
@@ -257,7 +252,7 @@ static int HandleKeypress(SDL_Event event) {
 		case SDLK_DOWN:
 			switch (status) {
 				case LIST:
-					game_list_sorted.MovePosition(display_list_size,1);
+					game_list.MovePosition(display_list_size);
 					searchterm = "";
 					UpdateDisplayList(&event.key.keysym);
 					break;
@@ -280,23 +275,43 @@ static int HandleKeypress(SDL_Event event) {
 					break;
 				case SORT:{
 					//Sort games by category
-					cout<<"Sort by the category"<<endl;
 					list<string> available_categories;
 					available_categories = categories.List();
 					list<string>::iterator it = available_categories.begin();
-					advance(it,selectedcategory-1);
+					//Move to the correct category
+					int dir = (selectedcategory > 0 ? 1:-1);
+					int vel = abs(selectedcategory);
+					for (int i = 0; i < vel; i++) {
+						if (dir == 1) {
+							if (it != available_categories.end()) {
+								it++;
+							}
+							else {
+								it = available_categories.begin();
+							}
+						}
+						else {
+							if (it != available_categories.begin()) {
+								it--;
+							}
+							else {
+								it = available_categories.end();
+								it--;
+							}
+						}
+					}
 					//Check if Category == ALL
 					if (it->compare("ALL") == 0) {
-						game_list_sorted = (game_list_full);
-						game_display_list = game_list_sorted.GetList(display_list_size);
+						game_display_list = game_list.GetList(display_list_size);
+						game_list.Restore();
 					}
 					else {
-						game_list_sorted = (game_list_full);
-						game_display_list = game_list_sorted.Sort(*it, &categories);
+						game_display_list = categories.GetMatches(*it);
+						game_list.Filter(game_display_list);
 					}
 					status = LIST;	
-					selectedcategory = 1;
-					selectedgame = 1;
+					selectedcategory = 0;
+					selectedgame = 0;
 					}
 					break;
 				default:
@@ -310,7 +325,6 @@ static int HandleKeypress(SDL_Event event) {
 			break;
 		case SDLK_TAB:
 			status = SORT;
-			cout<<"Hit the TAB key"<<endl;
 			Update();
 			break;
 		default:
@@ -318,7 +332,7 @@ static int HandleKeypress(SDL_Event event) {
 			switch (status) {
 				case LIST:
 					EnterSearchTerm(&event.key);
-					game_list_sorted.Search(searchterm);
+					game_list.Search(searchterm);
 					UpdateDisplayList(&event.key.keysym);					
 					break;
 				case SORT:
@@ -364,7 +378,8 @@ static int ProcessConfigFile() {
 	if ( location.SetImages(cfg->getvalue<string>("image_path")) == -1) {
 		location.SetImages(IMAGE_PATH); //Set to default
 	}
-		
+	
+	//Ensure that the specified locations exist
 	if (!FileExists(location.GetGames().c_str())) {
 		cout<<"ERROR; Game directory"<<location.GetGames()<<" does not exist"<<endl;
 		return 0;
@@ -422,32 +437,30 @@ static int Init() {
 	//Setup the positioning of the UI elements based on the resolution
 	x_image = res_width/50;
 	y_image = res_height/50;
-	
 	x_list = res_width-5;
 	y_list = 5;
-	
 	x_gamename = res_width/10;
 	y_gamename = res_height-fontsize-5;
-	
 	x_category = res_width/10*3;
 	y_category = res_height-fontsize-5;
-	
 	x_search = res_width/10*7;
 	y_search = res_height-fontsize-5;
-	
 	display_list_size = res_height/TTF_FontLineSkip(font)-2;
 	
-	game_list_full.Initialize(location.GetGames());
-	game_list_sorted.Copy(&game_list_full);
-	if (game_list_sorted.Size() < display_list_size) {
+	//Ensure that the size of the game list does not exceed the list size
+	game_list.Initialize(location.GetGames());
+	if (game_list.Size() < display_list_size) {
 		//limit display list to the size of the game list
-		display_list_size = game_list_sorted.Size();
+		display_list_size = game_list.Size();
 	}
+	
 	searchterm = "";
-	selectedgame = 1;
-	selectedcategory = 1;
-	game_display_list = game_list_full.GetList(display_list_size);
+	selectedgame = 0;
+	selectedcategory = 0;
+	game_display_list = game_list.GetList(display_list_size);
 	status = LIST;
+	
+	CabDisplay::DetermineDialogSize(categories.List(), font);
 	
 	Uint32 initflags = SDL_INIT_VIDEO;  /* See documentation for details */
 	Uint8  video_bpp = 0;
@@ -484,9 +497,8 @@ int main(int argc, char *argv[])
 {
 	int    done;
 	SDL_Event event;
-
 		
-	//Initialize our variables
+	//Initialize variables
 	if (Init() < 0) {
 		printf("Counldn't initialize CabSDL, exiting.");
 		exit(1);
@@ -495,6 +507,7 @@ int main(int argc, char *argv[])
 	//Initial Screen Diplay
 	Update();
 	
+	//Poll for events from the use
 	done = 0;
 	while ( !done ) {
 		/* Check for events */
@@ -515,9 +528,9 @@ int main(int argc, char *argv[])
 			}
 		}
 		else {
+			//No event so sleep to prevent 100% cpu utilization
 			SDL_Delay(1);
 		}
-
 	}
 	
 	//Run cleanup on any pointers

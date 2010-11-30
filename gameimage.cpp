@@ -21,6 +21,9 @@
 #include <curl/easy.h>
 #include <fstream>
 
+const int scale_x_res = 320;
+const int scale_y_res = 240;
+
 using namespace std;
 /*
 GameImage::GameImage() {
@@ -61,6 +64,12 @@ SDL_Surface* GameImage::GenerateImage(string game_name) {
 }
 
 SDL_Surface* GameImage::ScaleImage(SDL_Surface* image, int width, int height) {
+	//If the image surface is large add pixel skipping, default is none
+	int skipx = 1;
+	int skipy = 1;
+	if (image->w > scale_x_res) skipx = image->w/scale_x_res;
+	if (image->h > scale_y_res) skipy = image->h/scale_y_res;
+	
 	if (!width || !height || image->w == 0 || image->h == 0) {
 		cout<<"ERROR; GameImage::ScaleImage; Size must be greater than 0"<<endl;
 		return NULL;
@@ -76,15 +85,15 @@ SDL_Surface* GameImage::ScaleImage(SDL_Surface* image, int width, int height) {
 	if (stretchx < 1 && stretchy < 1) {
 		int targetx = 0;
 		int targety = 0;
-		dest.w = 1;
-		dest.h = 1;
+		dest.w = skipx;
+		dest.h = skipy;
 		//Determine scaling factors
 		double xinc = static_cast<double>(image->w)/static_cast<double>(width);
 		double yinc = static_cast<double>(image->h)/static_cast<double>(height);
 		//Loop through the scaled image dimensions
-		for (int y = 0; y < height; y++) {
+		for (int y = 0; y < height; y+=skipy) {
 			dest.y = y;
-			for (int x = 0; x < width; x++) {
+			for (int x = 0; x < width; x+=skipx) {
 				dest.x = x;
 				targetx = static_cast<double>(x)*xinc;
 				if (targetx >= image->w) {
@@ -105,11 +114,11 @@ SDL_Surface* GameImage::ScaleImage(SDL_Surface* image, int width, int height) {
 	else if (stretchx < 1) {
 		int targetx = 0;
 		double xinc = static_cast<double>(image->w)/static_cast<double>(width);
-		dest.w = 1;
-		for (int y = 0; y < image->h; y++) {
+		dest.w = skipx;
+		for (int y = 0; y < image->h; y+=skipy) {
 			dest.y = (static_cast<double>(y)*stretchy);
-			dest.h = (static_cast<double>(y+1)*stretchy);
-			for (int x = 0; x < width; x++) {
+			dest.h = (static_cast<double>(y+1)*stretchy)*skipx;
+			for (int x = 0; x < width; x+=skipx) {
 				dest.x = x;
 				pix = GameImage::GetPixel(image,targetx,y);
 				SDL_FillRect(scaled, &dest, SDL_MapRGB(image->format, pix.r, pix.g, pix.b));
@@ -125,12 +134,12 @@ SDL_Surface* GameImage::ScaleImage(SDL_Surface* image, int width, int height) {
 	else if (stretchy < 1) {
 		int targety = 0;
 		double yinc = static_cast<double>(image->h)/static_cast<double>(height);
-		dest.h = 1;
-		for (int y = 0; y < height; y++) {
+		dest.h = skipy;
+		for (int y = 0; y < height; y+=skipy) {
 			dest.y = y;
-			for (int x = 0; x < image->w; x++) {
+			for (int x = 0; x < image->w; x+=skipx) {
 				dest.x = (static_cast<double>(x)*stretchx);
-				dest.w = (static_cast<double>(x+1)*stretchx);
+				dest.w = (static_cast<double>(x+1)*stretchx)*skipx;
 				pix = GameImage::GetPixel(image,x,targety);
 				SDL_FillRect(scaled, &dest, SDL_MapRGB(image->format, pix.r, pix.g, pix.b));
 			}
@@ -144,12 +153,12 @@ SDL_Surface* GameImage::ScaleImage(SDL_Surface* image, int width, int height) {
 	//Scale up both dimensions
 	else {
 		//Loop across the original image, drawing the scaled pixels
-		for (int y = 0; y < image->h; y++) {
+		for (int y = 0; y < image->h; y+=skipy) {
 			dest.y = (static_cast<double>(y)*stretchy);
-			dest.h = (static_cast<double>(y+1)*stretchy);
-			for (int x = 0; x < image->w; x++) {
+			dest.h = (static_cast<double>(y+1)*stretchy)*skipy;
+			for (int x = 0; x < image->w; x+=skipx) {
 				dest.x = (static_cast<double>(x)*stretchx);
-				dest.w = (static_cast<double>(x+1)*stretchx);
+				dest.w = (static_cast<double>(x+1)*stretchx)*skipx;
 				pix = GameImage::GetPixel(image,x,y);
 				SDL_FillRect(scaled, &dest, SDL_MapRGB(image->format, pix.r, pix.g, pix.b));
 				//cout<<dest.x<<" "<<dest.y<<endl;

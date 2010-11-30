@@ -9,6 +9,11 @@
 
 #include "cabdisplay.h"
 #include <iostream>
+#include <math.h>
+
+//Initialize static members
+int CabDisplay::dialog_height = 0;
+int CabDisplay::dialog_width = 0;
 
 //x,y position is at the top left corner of the text
 int CabDisplay::DisplayText(string text, TTF_Font* font, SDL_Surface* display, int x, int y) {
@@ -81,7 +86,7 @@ int CabDisplay::DisplayList(list<string> games, int selected, TTF_Font* font, SD
 		SDL_Color n_color={255,255,255};
 		SDL_Color s_color={255,255,0};
 		SDL_Color* d_color;
-		int displaypos = 1;
+		int displaypos = 0;
 		while (games_pos != games.end()) {
 			if (displaypos == selected) {
 				d_color = &s_color;
@@ -109,26 +114,15 @@ int CabDisplay::DisplayList(list<string> games, int selected, TTF_Font* font, SD
 }
 
 int CabDisplay::DisplayCategoryBox(list<string> categories, int selected, TTF_Font* font, SDL_Surface* display, int x, int y) {
-	//Setup the size of the dialog box
-	int height = 20+10*TTF_FontLineSkip(font);
-	//Poll all the categories to determine the proper width of the dialog box
-	int fontheight;
-	int fontwidth;
-	int width = 0;
-	for (list<string>::iterator it = categories.begin(); it != categories.end(); it++) {
-		if (TTF_SizeText(font, it->c_str(), &fontwidth, &fontheight) == 0) {
-			if (fontwidth > width) width = fontwidth+20;
-		}
-	}
-	int xpos = x-width/2;
-	int ypos = y-height/2;
+	int xpos = x-CabDisplay::dialog_width/2;
+	int ypos = y-CabDisplay::dialog_height/2;
 	
 	//Create a black box for the dialog
 	SDL_Rect destination;
 	destination.x = xpos;
 	destination.y = ypos;
-	destination.w = width;
-	destination.h = height;
+	destination.w = CabDisplay::dialog_width;
+	destination.h = CabDisplay::dialog_height;
 	
 	//Create the dialog box
 	SDL_FillRect(display, &destination, 0x000000);
@@ -137,20 +131,65 @@ int CabDisplay::DisplayCategoryBox(list<string> categories, int selected, TTF_Fo
 	//Only display 10 items from the list
 	list<string> catdisplay;
 	list<string>::iterator it = categories.begin();
-	advance(it,selected-1);
+	int dir = (selected > 0 ? 1:-1);
+	int vel = abs(selected);
+	//Advance the iterator to the correct position
+	for (int i = 0; i < vel; i++) {
+		if (dir == 1) {
+			if (it != categories.end()) {
+				it++;
+			}
+			else {
+				it = categories.begin();
+			}			
+		}
+		else {
+			if (it != categories.begin()) {
+				it--;
+			}
+			else {
+				it = categories.end();
+				it--;
+			}		
+		}
+	}
+	//Get 10 items from the list, looping to begin/end if reach end/begin
 	for (int i = 0; i < 10; i++) {
 		if (it != categories.end()) {
+			catdisplay.push_back(*it);
+			it++;
+		}
+		else {
+			it = categories.begin();
 			catdisplay.push_back(*it);
 			it++;
 		}
 	}
 	
 	//Setup the positioning of the list
-	xpos = x+width/2-10;
-	ypos = y-height/2+10;
-	if (CabDisplay::DisplayList(catdisplay,1,font,display,xpos,ypos) == -1) {
+	xpos = x+CabDisplay::dialog_width/2-10;
+	ypos = y-CabDisplay::dialog_height/2+10;
+	if (CabDisplay::DisplayList(catdisplay,0,font,display,xpos,ypos) == -1) {
 		//Error in displaying the list
 		return -1;
 	}
+	//Executed without error
+	return 0;
+}
+
+int CabDisplay::DetermineDialogSize(list<string> text, TTF_Font* font) {
+	//Setup the size of the dialog box
+	CabDisplay::dialog_height = 20+10*TTF_FontLineSkip(font);
+	//Poll all the text to determine the proper width of the dialog box
+	int fontheight;
+	int fontwidth;
+	for (list<string>::iterator it = text.begin(); it != text.end(); it++) {
+		if (TTF_SizeText(font, it->c_str(), &fontwidth, &fontheight) == 0) {
+			if (fontwidth >= CabDisplay::dialog_width) {
+				CabDisplay::dialog_width = fontwidth+20;
+			} 
+		}
+	}
+	//Executed without error
 	return 0;
 }

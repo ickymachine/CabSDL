@@ -20,6 +20,7 @@ class GameImage {
 public:
 	static SDL_Surface* GenerateImage(string game_name);
 	static SDL_Surface* ScaleImage(SDL_Surface* image, int width, int height);
+	static void GenerateImageGL(string game_name);
 private:
 //	SDL_Surface* LoadImageFile(char * filename);
 //	string FindImageFile(string game);
