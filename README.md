@@ -15,7 +15,7 @@ soon support easy filtering when a keyboard isn't available, like in a cabinet.
 
 ## Ubuntu
 
-g++ -Wall -I /usr/include/SDL *.cpp ./configfile/configfile.cpp <path-to-libcurl> -lSDL_image -lSDL_ttf -lSDL  -o cabsdl
+g++ -Wall -I /usr/include/SDL -I /usr/include/curl *.cpp configfile/configfile.cpp /usr/lib/libcurl.so.4.2.0 -lSDL_image -lSDL_ttf -lSDL -o cabsdl
 
 ## OS X
 
