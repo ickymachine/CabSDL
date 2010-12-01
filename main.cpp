@@ -24,6 +24,7 @@
 #include "cabdisplay.h"
 #include "constants.h"
 #include "category.h"
+#include "resize++.h"
 
 #include "configfile/configfile.h"
 
@@ -174,10 +175,13 @@ static int UpdateDisplayList(SDL_keysym* key) {
 
 static void Update() {
 	switch (status) {
-		case LIST:
+		case LIST: {
 			CabDisplay::BlankDisplay(screen);
 			//Display the game image
-			CabDisplay::DisplayImage(GameImage::ScaleImage(GameImage::GenerateImage(GetImagePath()),static_cast<int>(res_width*(0.85)), static_cast<int>(res_height*(0.90))),screen, x_image, y_image);
+//			CabDisplay::DisplayImage(GameImage::ScaleImage(GameImage::GenerateImage(GetImagePath()),static_cast<int>(res_width*(0.85)), static_cast<int>(res_height*(0.90))),screen, x_image, y_image);
+			SDL_Surface* image = GameImage::GenerateImage(GetImagePath());
+			image = SDL_Resize(image, static_cast<int>(res_width*0.85), static_cast<int>(res_height*0.90));
+			CabDisplay::DisplayImage(image,screen,x_image,y_image);
 			//Display the game name
 			CabDisplay::DisplayText(game_list.GetGame(),font,screen,x_gamename,y_gamename);
 			//Display the game category
@@ -187,6 +191,7 @@ static void Update() {
 			//Display the list of games
 			CabDisplay::DisplayList(game_display_list,selectedgame,font,screen, x_list, y_list);			
 			break;
+		}
 		case SORT:
 			//Display the dialog
 			CabDisplay::DisplayCategoryBox(categories.List(),selectedcategory,font,screen,screen->w/2, screen->h/2);
