@@ -12,7 +12,7 @@
 
 #include <list>
 #include <string>
-#include <math.h>
+#include "stdlib.h"
 
 class wlist {
 public:

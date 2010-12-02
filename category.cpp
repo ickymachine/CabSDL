@@ -10,6 +10,11 @@
 #include "category.h"
 #include <fstream>
 #include <iostream>
+#include <string>
+
+#ifdef __APPLE__
+#include "mac.h"
+#endif
 
 Category::Category() {
 	//Zero out the map and list
@@ -20,7 +25,11 @@ Category::Category() {
 	category_types.push_back("ALL");
 	
 	//Load the category information from the local file categories.txt
-	std::ifstream catlist("categories.txt");
+	std::string filepath = "categories.txt";
+#ifdef __APPLE__
+	filepath = App::ResourcesPath()+"/categories.txt";
+#endif
+	std::ifstream catlist(filepath.c_str());
 	if ( ! catlist.good()) {
 		//File Does Not Exist
 		printf("Category; Could not open file categories.txt");
@@ -39,12 +48,12 @@ Category::Category() {
 			std::string cat = line.substr(pos+1,line.length()-2-pos);
 			//Add the key,data pair to the map
 			game_categories.insert(std::pair<std::string,std::string>(game,cat));
-//			std::cout<<"GAME "<<game<<" CAT "<<cat<<std::endl;
+			//			std::cout<<"GAME "<<game<<" CAT "<<cat<<std::endl;
 			
 			//Check if the category is in the list
 			if (category_types.empty()) {
 				category_types.push_back(cat);
-//				std::cout<<"Initial; Adding "<<cat<<" to list"<<std::endl;
+				//				std::cout<<"Initial; Adding "<<cat<<" to list"<<std::endl;
 			}
 			else {
 				int found = 0;
@@ -53,7 +62,7 @@ Category::Category() {
 					//Check if the category exists
 					if (cat.compare(*it) == 0) {
 						found = 1;
-//						std::cout<<"FOUND A MATCH FOR "<<cat<<" in "<<*it<<std::endl;
+						//						std::cout<<"FOUND A MATCH FOR "<<cat<<" in "<<*it<<std::endl;
 					}
 					it++;
 				}
@@ -61,7 +70,7 @@ Category::Category() {
 					//The category was not found so add it to the list
 					if (cat.length() > 0) {
 						category_types.push_back(cat);
-//						std::cout<<"Adding "<<cat<<" to list"<<std::endl;
+						//						std::cout<<"Adding "<<cat<<" to list"<<std::endl;
 					}
 				}
 			}

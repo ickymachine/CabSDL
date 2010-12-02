@@ -21,10 +21,15 @@
 #include <curl/easy.h>
 #include <fstream>
 
+#ifdef __APPLE__
+#include "mac.h"
+#endif
+
 const int scale_x_res = 320;
 const int scale_y_res = 240;
 
 using namespace std;
+
 /*
 GameImage::GameImage() {
 	
@@ -53,8 +58,13 @@ SDL_Surface* GameImage::GenerateImage(string game_name) {
 	//check if the image loading failed
 	if (image == NULL) {
 		//Load and display default image instead
+		std::string filepath = "default.png";
 		cout<<"ERROR; GameImage::GenerateImage; Couldn't load image at "<<filename<<endl;
-		image = IMG_Load("default.png");
+		
+#ifdef __APPLE__
+		filepath = App::ResourcesPath()+"/default.png";
+#endif
+		image = IMG_Load(filepath.c_str());
 		if (image == NULL) {
 			//couldn't load default for some reason
 			cout<<"ERROR; GameImage::Generate; Couldn't load default.png"<<endl;
@@ -202,17 +212,17 @@ void GameImage::DownloadImage(string file_name) {
 	CURLcode res;
 	string url = "http://www.mamedb.com/titles/"+game_name+".png";
 	string outfilename = file_name+".png";
-	cout<<"INFO; attempting to download "<<url<<"..."<<endl;
+//	cout<<"INFO; attempting to download "<<url<<"..."<<endl;
 	curl = curl_easy_init();
 	if (curl) {
-		cout<<"INFO; downloading "<<url<<"..."<<endl;
+//		cout<<"INFO; downloading "<<url<<"..."<<endl;
 		fp = fopen(outfilename.c_str(), "wb");
-		cout<<"INFO; trying to open "<<outfilename<<" for file output"<<endl;
+//		cout<<"INFO; trying to open "<<outfilename<<" for file output"<<endl;
 		if (fp != NULL) {
 			curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
 			curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, GameImage::WriteData);
 			curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
-			curl_easy_setopt(curl, CURLOPT_VERBOSE, 1);
+//			curl_easy_setopt(curl, CURLOPT_VERBOSE, 1);
 			res = curl_easy_perform(curl);
 
 			long http_code = 0;
