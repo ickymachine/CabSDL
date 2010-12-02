@@ -2,8 +2,8 @@
  *  constants.h
  *  CabSDL
  *
- *  Created by Matthew Capodarco on 11/23/10.
- *  Copyright 2010 __MyCompanyName__. All rights reserved.
+ *  Created by ickymachine on 11/23/10.
+ *  Copyright 2010. All rights reserved.
  *
  */
 
