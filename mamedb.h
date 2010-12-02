@@ -11,7 +11,6 @@
 #define MAMEDB_H
 
 #define CURL_STATICLIB
-
 #include <curl/curl.h>
 #include <curl/types.h>
 #include <curl/easy.h>
@@ -24,8 +23,7 @@ class MameDB {
 public:
 	static void DownloadImage(string file_name);
 private:
-	static
-	size_t WriteData(void *ptr, size_t size, size_t nmemb, FILE *stream);
+	static size_t WritePNG(void *ptr, size_t size, size_t nmemb, FILE *stream);
 };
 
 #endif

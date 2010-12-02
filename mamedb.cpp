@@ -9,6 +9,7 @@
 
 #include "mamedb.h"
 #include <iostream>
+#include <sstream>
 
 using namespace std;
 
@@ -34,7 +35,7 @@ void MameDB::DownloadImage(string file_name) {
 		//		cout<<"INFO; trying to open "<<outfilename<<" for file output"<<endl;
 		if (fp != NULL) {
 			curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-			curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, MameDB::WriteData);
+			curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, MameDB::WritePNG);
 			curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
 			//			curl_easy_setopt(curl, CURLOPT_VERBOSE, 1);
 			res = curl_easy_perform(curl);
@@ -46,6 +47,7 @@ void MameDB::DownloadImage(string file_name) {
 			if ( ! (http_code == 200 && res != CURLE_ABORTED_BY_CALLBACK))
 			{
 				remove(outfilename.c_str());
+				cout<<"MameDB::DownloadImage; Couldn't retrieve file for download."<<endl;
 			}
 			
 			curl_easy_cleanup(curl);
@@ -57,7 +59,7 @@ void MameDB::DownloadImage(string file_name) {
 	}
 }
 
-size_t MameDB::WriteData(void *ptr, size_t size, size_t nmemb, FILE *stream) {
+size_t MameDB::WritePNG(void *ptr, size_t size, size_t nmemb, FILE *stream) {
 	size_t written;
 	written = fwrite(ptr, size, nmemb, stream);
 	return written;
