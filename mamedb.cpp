@@ -13,6 +13,11 @@
 
 using namespace std;
 
+struct MemoryStruct {
+	char* memory;
+	size_t size;
+};
+
 /*
  * Downloads a remote image from mamedb.com and saves it to the rom image path
  *
@@ -25,7 +30,7 @@ void MameDB::DownloadImage(string file_name) {
 	CURL *curl;
 	FILE *fp;
 	CURLcode res;
-	string url = "http://www.mamedb.com/titles/"+game_name+".png";
+	string url = "http://www.mamedb.org/images/rom/titles/"+game_name+".png";
 	string outfilename = file_name+".png";
 	//	cout<<"INFO; attempting to download "<<url<<"..."<<endl;
 	curl = curl_easy_init();
@@ -35,7 +40,7 @@ void MameDB::DownloadImage(string file_name) {
 		//		cout<<"INFO; trying to open "<<outfilename<<" for file output"<<endl;
 		if (fp != NULL) {
 			curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-			curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, MameDB::WritePNG);
+			curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, MameDB::WriteFile);
 			curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
 			//			curl_easy_setopt(curl, CURLOPT_VERBOSE, 1);
 			res = curl_easy_perform(curl);
@@ -59,7 +64,7 @@ void MameDB::DownloadImage(string file_name) {
 	}
 }
 
-size_t MameDB::WritePNG(void *ptr, size_t size, size_t nmemb, FILE *stream) {
+size_t MameDB::WriteFile(void *ptr, size_t size, size_t nmemb, FILE *stream) {
 	size_t written;
 	written = fwrite(ptr, size, nmemb, stream);
 	return written;
