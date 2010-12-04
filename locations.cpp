@@ -29,7 +29,7 @@ Locations::~Locations() {
 	
 }
 
-int Locations::SetGames(std::string name) {
+int Locations::SetGames(const std::string& name) {
 	if (name != "") {
 		games = name;
 		return 0;
@@ -37,7 +37,7 @@ int Locations::SetGames(std::string name) {
 	return -1;
 }
 
-int Locations::SetFont(std::string name) {
+int Locations::SetFont(const std::string& name) {
 	if (name != "") {
 		font = name;
 		return 0;
@@ -45,7 +45,7 @@ int Locations::SetFont(std::string name) {
 	return -1;
 }
 
-int Locations::SetCommand(std::string name) {
+int Locations::SetCommand(const std::string& name) {
 	if (name != "") {
 		command = name;
 		return 0;
@@ -53,7 +53,7 @@ int Locations::SetCommand(std::string name) {
 	return -1;
 }
 
-int Locations::SetImages(std::string name) {
+int Locations::SetImages(const std::string& name) {
 	if (name != "") {
 		images = name;
 		return 0;
@@ -61,18 +61,18 @@ int Locations::SetImages(std::string name) {
 	return -1;
 }
 
-std::string Locations::GetCommand() {
+std::string Locations::GetCommand() const {
 	return command;
 }
 
-std::string Locations::GetFont() {
+std::string Locations::GetFont() const {
 	return font;
 }
 
-std::string Locations::GetGames() {
+std::string Locations::GetGames() const {
 	return games;
 }
 
-std::string Locations::GetImages() {
+std::string Locations::GetImages() const {
 	return images;
 }

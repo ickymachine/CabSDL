@@ -16,7 +16,7 @@ int CabDisplay::dialog_height = 0;
 int CabDisplay::dialog_width = 0;
 
 //x,y position is at the top left corner of the text
-int CabDisplay::DisplayText(string text, TTF_Font* font, SDL_Surface* display, int x, int y) {
+int CabDisplay::DisplayText(const string& text, TTF_Font* font, SDL_Surface* display, int x, int y) {
 	SDL_Rect destination;
 	//Display the Rom name to the screen
 	SDL_Color color={255,255,255};	//White
@@ -67,7 +67,7 @@ int CabDisplay::BlankDisplay(SDL_Surface* display) {
 }
 
 
-int CabDisplay::DisplayList(list<string> games, int selected, TTF_Font* font, SDL_Surface* display, int x, int y) {
+int CabDisplay::DisplayList(list<string>& games, int selected, TTF_Font* font, SDL_Surface* display, int x, int y) {
 	SDL_Rect destination;
 	
 	//Display the list of game names to the screen
@@ -113,7 +113,7 @@ int CabDisplay::DisplayList(list<string> games, int selected, TTF_Font* font, SD
 	return 0;	
 }
 
-int CabDisplay::DisplayCategoryBox(list<string> categories, int selected, TTF_Font* font, SDL_Surface* display, int x, int y) {
+int CabDisplay::DisplayCategoryBox(list<string>* categories, int selected, TTF_Font* font, SDL_Surface* display, int x, int y) {
 	int xpos = x-CabDisplay::dialog_width/2;
 	int ypos = y-CabDisplay::dialog_height/2;
 	
@@ -130,37 +130,37 @@ int CabDisplay::DisplayCategoryBox(list<string> categories, int selected, TTF_Fo
 	//Display the list of categories to the screen
 	//Only display 10 items from the list
 	list<string> catdisplay;
-	list<string>::iterator it = categories.begin();
+	list<string>::iterator it = categories->begin();
 	int dir = (selected > 0 ? 1:-1);
 	int vel = abs(selected);
 	//Advance the iterator to the correct position
 	for (int i = 0; i < vel; i++) {
 		if (dir == 1) {
-			if (it != categories.end()) {
+			if (it != categories->end()) {
 				it++;
 			}
 			else {
-				it = categories.begin();
+				it = categories->begin();
 			}			
 		}
 		else {
-			if (it != categories.begin()) {
+			if (it != categories->begin()) {
 				it--;
 			}
 			else {
-				it = categories.end();
+				it = categories->end();
 				it--;
 			}		
 		}
 	}
 	//Get 10 items from the list, looping to begin/end if reach end/begin
 	for (int i = 0; i < 10; i++) {
-		if (it != categories.end()) {
+		if (it != categories->end()) {
 			catdisplay.push_back(*it);
 			it++;
 		}
 		else {
-			it = categories.begin();
+			it = categories->begin();
 			catdisplay.push_back(*it);
 			it++;
 		}
@@ -177,13 +177,13 @@ int CabDisplay::DisplayCategoryBox(list<string> categories, int selected, TTF_Fo
 	return 0;
 }
 
-int CabDisplay::DetermineDialogSize(list<string> text, TTF_Font* font) {
+int CabDisplay::DetermineDialogSize(list<string>* text, TTF_Font* font) {
 	//Setup the size of the dialog box
 	CabDisplay::dialog_height = 20+10*TTF_FontLineSkip(font);
 	//Poll all the text to determine the proper width of the dialog box
 	int fontheight;
 	int fontwidth;
-	for (list<string>::iterator it = text.begin(); it != text.end(); it++) {
+	for (list<string>::iterator it = text->begin(); it != text->end(); it++) {
 		if (TTF_SizeText(font, it->c_str(), &fontwidth, &fontheight) == 0) {
 			if (fontwidth >= CabDisplay::dialog_width) {
 				CabDisplay::dialog_width = fontwidth+20;

@@ -23,7 +23,7 @@ GameList::GameList() {
 	//_current = games.begin();
 }
 
-void GameList::Copy(list<string> copy) {
+void GameList::Copy(const list<string>& copy) {
 	games.clear();
 	games_full.clear();
 	games.set(copy);
@@ -35,7 +35,7 @@ GameList::~GameList() {
 	games.clear();
 }
 
-int GameList::Initialize(string path) {
+int GameList::Initialize(const string& path) {
 	//Clear out the list
 	games.clear();
 	//Check if the path exists
@@ -69,7 +69,7 @@ void GameList::MovePosition(int num) {
 	games.move(num);
 }
 
-void GameList::Search(string gamename) {
+void GameList::Search(const string& gamename) {
 	games.search(gamename);
 }
 
@@ -99,7 +99,7 @@ int GameList::Size() {
 	return games.size();
 }
 
-void GameList::Filter(list<string> keep) {
+void GameList::Filter(const list<string>& keep) {
 	games.set(keep);
 }
 

@@ -17,14 +17,14 @@ class Locations {
 public: 
 	Locations();
 	~Locations();
-	std::string GetGames();
-	std::string GetFont();
-	std::string GetCommand();
-	std::string GetImages();
-	int SetGames(std::string name);
-	int SetFont(std::string name);
-	int SetCommand(std::string name);
-	int SetImages(std::string name);
+	std::string GetGames() const;
+	std::string GetFont() const;
+	std::string GetCommand() const;
+	std::string GetImages() const;
+	int SetGames(const std::string& name);
+	int SetFont(const std::string& name);
+	int SetCommand(const std::string& name);
+	int SetImages(const std::string& name);
 private:
 	std::string games;
 	std::string images;

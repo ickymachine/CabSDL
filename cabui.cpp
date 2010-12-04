@@ -78,15 +78,15 @@ int CabUI::UpdateDisplayList(SDL_keysym* key) {
 	
 	//Check to see if list needs to be updated
 	if (selectedgame == 0 && key->sym == SDLK_LEFT) {
-		game_display_list = game_list.GetList(-size);
+		game_display_list = CreateDisplayList(-size);
 		selectedgame = size-1;
 	}
 	else if (selectedgame == size-1 && key->sym == SDLK_RIGHT) {
-		game_display_list = game_list.GetList(size);
+		game_display_list = CreateDisplayList(size);
 		selectedgame = 0;
 	}
 	else if (key->sym == SDLK_UP || key->sym == SDLK_DOWN) {
-		game_display_list = game_list.GetList(size);
+		game_display_list = CreateDisplayList(size);
 		selectedgame = 0;
 	}
 	else if (key->sym == SDLK_RIGHT) {
@@ -97,8 +97,13 @@ int CabUI::UpdateDisplayList(SDL_keysym* key) {
 	}
 	else {
 		//Must have been a search
-		game_display_list = game_list.GetList(display_list_size);
 		selectedgame = 0;
+		game_display_list = CreateDisplayList(size);
+		std::cout<<"Search List: "<<std::endl;
+		for (std::list<std::string>::iterator i = game_display_list.begin(); i != game_display_list.end(); i++) {
+			std::cout<<*i<<std::endl;
+		}
+		std::cout<<"End Search List"<<std::endl;
 	}
 	return 0;
 }
@@ -110,7 +115,7 @@ void CabUI::Update() {
 			//Display the game image
 			std::string image_path = location.GetImages()+game_list.GetGame();
 			SDL_Surface* image = GameImage::GenerateImage(image_path);
-			image = GameImage::ScaleImage(image, static_cast<int>(res_width*(0.85)), static_cast<int>(res_height*(0.90)));
+			image = GameImage::ScaleImage(image, static_cast<int>(res_width*(0.70)), static_cast<int>(res_height*(0.90)));
 			CabDisplay::DisplayImage(image,screen,x_image,y_image);
 			//Display the game name
 			CabDisplay::DisplayText(game_list.GetGame(),font,screen,x_gamename,y_gamename);
@@ -124,7 +129,11 @@ void CabUI::Update() {
 		}
 		case SORT:
 			//Display the dialog
-			CabDisplay::DisplayCategoryBox(categories.List(),selectedcategory,font,screen,screen->w/2, screen->h/2);
+			{
+			std::list<std::string>* pass = new std::list<std::string>(categories.List());
+			CabDisplay::DisplayCategoryBox(pass,selectedcategory,font,screen,screen->w/2, screen->h/2);
+			delete(pass);
+			}
 			break;
 		default:
 			break;
@@ -133,9 +142,9 @@ void CabUI::Update() {
 	CabDisplay::UpdateDisplay(screen);
 }
 
-int CabUI::HandleKeypress(SDL_Event event) {
+int CabUI::HandleKeypress(SDL_Event* event) {
 	//Determine which key was pressed
-	switch (event.key.keysym.sym) {
+	switch (event->key.keysym.sym) {
 		case SDLK_ESCAPE:
 			return 1;
 			break;
@@ -144,7 +153,7 @@ int CabUI::HandleKeypress(SDL_Event event) {
 				case LIST:
 					game_list.MovePosition(-1);
 					searchterm = "";
-					UpdateDisplayList(&event.key.keysym);
+					UpdateDisplayList(&event->key.keysym);
 					break;
 				case SORT:
 					selectedcategory--;
@@ -160,7 +169,7 @@ int CabUI::HandleKeypress(SDL_Event event) {
 				case LIST:
 					game_list.MovePosition(1);
 					searchterm = "";
-					UpdateDisplayList(&event.key.keysym);
+					UpdateDisplayList(&event->key.keysym);
 					break;
 				case SORT:
 					selectedcategory++;
@@ -175,7 +184,7 @@ int CabUI::HandleKeypress(SDL_Event event) {
 				case LIST:
 					game_list.MovePosition(-display_list_size);
 					searchterm = "";
-					UpdateDisplayList(&event.key.keysym);
+					UpdateDisplayList(&event->key.keysym);
 					break;
 				case SORT:
 					break;
@@ -189,7 +198,7 @@ int CabUI::HandleKeypress(SDL_Event event) {
 				case LIST:
 					game_list.MovePosition(display_list_size);
 					searchterm = "";
-					UpdateDisplayList(&event.key.keysym);
+					UpdateDisplayList(&event->key.keysym);
 					break;
 				default:
 					break;
@@ -237,17 +246,21 @@ int CabUI::HandleKeypress(SDL_Event event) {
 					}
 					//Check if Category == ALL
 					if (it->compare("ALL") == 0) {
-						game_display_list = game_list.GetList(display_list_size);
 						game_list.Restore();
 					}
 					else {
-						game_display_list = categories.GetMatches(*it);
-						game_list.Filter(game_display_list);
+						game_list.Filter(categories.GetMatches(*it));
+						list<string> check_list = game_list.GetList();
+						for (list<string>::iterator i = check_list.begin(); i != check_list.end(); i++) {
+							cout<<*i<<endl;
+						}
 					}
+				}
+					game_display_list = CreateDisplayList(display_list_size);
 					status = LIST;	
 					selectedcategory = 0;
 					selectedgame = 0;
-				}
+					searchterm = "";
 					break;
 				default:
 					break;
@@ -266,12 +279,13 @@ int CabUI::HandleKeypress(SDL_Event event) {
 			//Assume search initiated
 			switch (status) {
 				case LIST:
-					EnterSearchTerm(&event.key);
+					EnterSearchTerm(&event->key);
+					std::cout<<"searching: "<<searchterm<<std::endl;
 					game_list.Search(searchterm);
-					UpdateDisplayList(&event.key.keysym);					
+					UpdateDisplayList(&event->key.keysym);					
 					break;
 				case SORT:
-					EnterSearchTerm(&event.key);
+	//				EnterSearchTerm(&event->key);
 					break;
 				default:
 					break;
@@ -392,10 +406,12 @@ int CabUI::Init() {
 	searchterm = "";
 	selectedgame = 0;
 	selectedcategory = 0;
-	game_display_list = game_list.GetList(display_list_size);
+	game_display_list = CreateDisplayList(display_list_size);
 	status = LIST;
 	
-	CabDisplay::DetermineDialogSize(categories.List(), font);
+	std::list<std::string>* pass = new std::list<std::string>(categories.List());
+	CabDisplay::DetermineDialogSize(pass, font);
+	delete(pass);
 	
 	Uint32 initflags = SDL_INIT_VIDEO;  /* See documentation for details */
 	Uint8  video_bpp = 0;
@@ -429,4 +445,14 @@ int CabUI::Cleanup() {
 	TTF_CloseFont(font);
 	TTF_Quit();
 	return 0;
+}
+
+std::list<std::string> CabUI::CreateDisplayList(int size) {
+	std::cout<<"Trying to create the display list"<<std::endl;
+	std::list<std::string> games_for_list = game_list.GetList(size);
+	std::list<std::string> rtn;
+	for (std::list<std::string>::iterator i = games_for_list.begin(); i != games_for_list.end(); i++) {
+		rtn.push_back(descriptions.Name(*i));
+	}
+	return rtn;
 }

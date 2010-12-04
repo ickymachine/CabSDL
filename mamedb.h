@@ -21,7 +21,7 @@ using namespace std;
 
 class MameDB {
 public:
-	static void DownloadImage(string file_name);
+	static void DownloadImage(const string& file_name);
 private:
 	static size_t WriteFile(void* ptr, size_t size, size_t nmemb, FILE *stream);
 };

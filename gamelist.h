@@ -20,16 +20,16 @@ using namespace std;
 class GameList {
 public:
 	GameList();	//default constructor
-	void Copy(list<string> copy);
+	void Copy(const list<string>& copy);
 	~GameList();
-	int Initialize(string path);	//generate the rom list based on the directory provided
+	int Initialize(const string& path);	//generate the rom list based on the directory provided
 	string GetGame();
 	list<string> GetList(int num);	//Get a list of num games
 	list<string> GetList();	//return the entire list
 	void MovePosition(int num);
-	void Search(string gamename);
+	void Search(const string& gamename);
 	int Size();
-	void Filter(list<string> keep);
+	void Filter(const list<string>& keep);
 	void Restore();
 private:
 	//list<string> games;

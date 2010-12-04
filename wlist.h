@@ -13,6 +13,7 @@
 #include <list>
 #include <string>
 #include "stdlib.h"
+#include <iostream>
 
 class wlist {
 public:
@@ -26,13 +27,13 @@ public:
 	void clear() {
 		data.clear();
 	}
-	void push_back(std::string item) {
+	void push_back(const std::string& item) {
 		data.push_back(item);
 	}
 	void sort() {
 		data.sort();
 	}
-	void set(std::list<std::string> values) {
+	void set(const std::list<std::string>& values) {
 		data = values;
 		position = 0;
 	}
@@ -45,7 +46,7 @@ public:
 		int vel = abs(position);
 		for (int i = 0; i < vel; i++) {
 			if (dir == 1) {
-				if (it == data.end()) {
+				if (++it == data.end()) {
 					it = data.begin();
 				}		
 				else {
@@ -72,7 +73,7 @@ public:
 		}
 		return rtn;
 	}
-	void search(std::string searchterm) {
+	void search(const std::string& searchterm) {
 		std::list<std::string>::iterator i = data.begin();
 		int done = 0;
 		int pos = 0;
@@ -82,6 +83,7 @@ public:
 				done = 1;
 				//Move to the found game
 				position = pos;
+				std::cout<<"FOUND: "<<*i<<std::endl;
 			}
 			i++;
 			pos++;

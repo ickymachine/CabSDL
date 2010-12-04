@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
 				case SDL_MOUSEBUTTONDOWN:
 					break;
 				case SDL_KEYDOWN:
-					done = cabui.HandleKeypress(event);
+					done = cabui.HandleKeypress(&event);
 					break;
 				case SDL_QUIT:
 					done = 1;

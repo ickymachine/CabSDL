@@ -27,6 +27,8 @@
 #include "cabdisplay.h"
 #include "constants.h"
 #include "category.h"
+#include "description.h"
+
 #include "resize++.h"
 
 #include "configfile/configfile.h"
@@ -43,9 +45,10 @@ public:
 	
 	int Cleanup();
 	int Init();
-	int HandleKeypress(SDL_Event event);
+	int HandleKeypress(SDL_Event* event);
 	void Update();
 private:
+	std::list<std::string> CreateDisplayList(int size);
 	int ProcessConfigFile();
 	int UpdateDisplayList(SDL_keysym* key);
 	void EnterSearchTerm(SDL_KeyboardEvent* key);
@@ -60,6 +63,7 @@ private:
 	//CabSDL
 	GameList		game_list;
 	Category		categories;
+	Description		descriptions;
 	ConfigFile*		cfg;
 	Locations		location;
 	DisplayState	status;

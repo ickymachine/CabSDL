@@ -90,7 +90,7 @@ Category::~Category() {
 	category_types.clear();
 }
 
-std::string Category::GetCategory(std::string gamename) {
+std::string Category::GetCategory(const std::string& gamename) {
 	//Declare iterator to search the map
 	std::map<std::string, std::string>::iterator fnd = game_categories.find(gamename);
 	
@@ -114,7 +114,7 @@ void Category::Print() {
 	}
 }
 
-std::list<std::string> Category::GetMatches(std::string category) {
+std::list<std::string> Category::GetMatches(const std::string& category) {
 	//Find the range of elements that match the category
 	std::pair<std::multimap<std::string,std::string>::iterator,std::multimap<std::string,std::string>::iterator> range;
 	range = category_games.equal_range(category);

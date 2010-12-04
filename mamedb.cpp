@@ -23,7 +23,7 @@ struct MemoryStruct {
  *
  * @return void
  */
-void MameDB::DownloadImage(string file_name) {
+void MameDB::DownloadImage(const string& file_name) {
 	string game_name;
 	game_name = file_name.substr(file_name.find_last_of("/")+1);
 	
