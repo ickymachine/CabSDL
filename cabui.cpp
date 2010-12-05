@@ -99,11 +99,6 @@ int CabUI::UpdateDisplayList(SDL_keysym* key) {
 		//Must have been a search
 		selectedgame = 0;
 		game_display_list = CreateDisplayList(size);
-		std::cout<<"Search List: "<<std::endl;
-		for (std::list<std::string>::iterator i = game_display_list.begin(); i != game_display_list.end(); i++) {
-			std::cout<<*i<<std::endl;
-		}
-		std::cout<<"End Search List"<<std::endl;
 	}
 	return 0;
 }
@@ -251,9 +246,6 @@ int CabUI::HandleKeypress(SDL_Event* event) {
 					else {
 						game_list.Filter(categories.GetMatches(*it));
 						list<string> check_list = game_list.GetList();
-						for (list<string>::iterator i = check_list.begin(); i != check_list.end(); i++) {
-							cout<<*i<<endl;
-						}
 					}
 				}
 					game_display_list = CreateDisplayList(display_list_size);
@@ -280,7 +272,6 @@ int CabUI::HandleKeypress(SDL_Event* event) {
 			switch (status) {
 				case LIST:
 					EnterSearchTerm(&event->key);
-					std::cout<<"searching: "<<searchterm<<std::endl;
 					game_list.Search(searchterm);
 					UpdateDisplayList(&event->key.keysym);					
 					break;
@@ -448,7 +439,6 @@ int CabUI::Cleanup() {
 }
 
 std::list<std::string> CabUI::CreateDisplayList(int size) {
-	std::cout<<"Trying to create the display list"<<std::endl;
 	std::list<std::string> games_for_list = game_list.GetList(size);
 	std::list<std::string> rtn;
 	for (std::list<std::string>::iterator i = games_for_list.begin(); i != games_for_list.end(); i++) {

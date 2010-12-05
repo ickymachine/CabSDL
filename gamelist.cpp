@@ -87,7 +87,7 @@ list<string> GameList::GetList(int num) {
 		} 
 		games.move(dir);
 	}
-	games.move(-num);
+	games.move(0-num);
 	return rtn;
 }
 
