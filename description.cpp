@@ -53,3 +53,11 @@ std::string Description::Name(const std::string& game_name) {
 	}
 	return game_name;
 }
+
+std::list<std::string> Description::List() {
+	std::list<std::string> rtn;
+	for (std::map<std::string, std::string>::iterator i = descriptions.begin(); i != descriptions.end(); i++) {
+		rtn.push_back(i->second);
+	}
+	return rtn;
+}

@@ -12,11 +12,13 @@
 
 #include <map>
 #include <string>
+#include <list>
 
 class Description {
 public:
 	Description();
 	std::string Name(const std::string& game_name);
+	std::list<std::string> List();
 private:
 	std::map<std::string, std::string> descriptions;	//key = name; data = description
 };

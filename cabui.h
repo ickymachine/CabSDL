@@ -53,9 +53,13 @@ private:
 	std::list<std::string> CreateDisplayList(int size);
 	int ProcessConfigFile();
 	int UpdateDisplayList(SDL_keysym* key);
-	void EnterSearchTerm(SDL_KeyboardEvent* key);
+	std::string EnterText(SDL_KeyboardEvent* key);
 	const char* ConstructExecutableCall();
 	int FileExists(const char* path);
+	void Move(SDL_Event* event, int distance);
+	void Sort();
+	void Launch();
+	void Search(SDL_Event* event);
 	
 	//SDL 
 	SDL_Surface*	screen;

@@ -8,12 +8,15 @@
  */
 
 #include "cabdisplay.h"
+#include "gameimage.h"
 #include <iostream>
 #include <math.h>
 
 //Initialize static members
 int CabDisplay::dialog_height = 0;
 int CabDisplay::dialog_width = 0;
+int CabDisplay::image_height = 0;
+int CabDisplay::image_width = 0;
 
 //x,y position is at the top left corner of the text
 int CabDisplay::DisplayText(const string& text, TTF_Font* font, SDL_Surface* display, int x, int y) {
@@ -55,6 +58,7 @@ int CabDisplay::DisplayImage(SDL_Surface* image, SDL_Surface* display, int x, in
 	//try to center the image on the display
 	destination.x = x;
 	destination.y = y;
+	image = GameImage::ScaleImage(image, image_width, image_height);
 	SDL_BlitSurface(image, NULL, display, &destination);	
 	SDL_FreeSurface(image);
 	return 0;
@@ -119,12 +123,17 @@ int CabDisplay::DisplayCategoryBox(list<string>* categories, int selected, TTF_F
 	
 	//Create a black box for the dialog
 	SDL_Rect destination;
-	destination.x = xpos;
-	destination.y = ypos;
+	destination.x = xpos-5;
+	destination.y = ypos-5;
 	destination.w = CabDisplay::dialog_width;
 	destination.h = CabDisplay::dialog_height;
 	
 	//Create the dialog box
+	SDL_FillRect(display, &destination, SDL_MapRGB(display->format, 255, 255, 255));
+	destination.x = xpos;
+	destination.y = ypos;
+	destination.w = CabDisplay::dialog_width-10;
+	destination.h = CabDisplay::dialog_height-10;
 	SDL_FillRect(display, &destination, 0x000000);
 	
 	//Display the list of categories to the screen
@@ -167,8 +176,8 @@ int CabDisplay::DisplayCategoryBox(list<string>* categories, int selected, TTF_F
 	}
 	
 	//Setup the positioning of the list
-	xpos = x+CabDisplay::dialog_width/2-10;
-	ypos = y-CabDisplay::dialog_height/2+10;
+	xpos = x+CabDisplay::dialog_width/2-15;
+	ypos = y-CabDisplay::dialog_height/2+5;
 	if (CabDisplay::DisplayList(catdisplay,0,font,display,xpos,ypos) == -1) {
 		//Error in displaying the list
 		return -1;
@@ -191,5 +200,11 @@ int CabDisplay::DetermineDialogSize(list<string>* text, TTF_Font* font) {
 		}
 	}
 	//Executed without error
+	return 0;
+}
+
+int CabDisplay::SetImageSize(int width, int height) {
+	CabDisplay::image_width = width;
+	CabDisplay::image_height = height;
 	return 0;
 }

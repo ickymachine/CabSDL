@@ -64,14 +64,16 @@ const char* CabUI::ConstructExecutableCall() {
 	return call.c_str();
 }
 
-void CabUI::EnterSearchTerm(SDL_KeyboardEvent* key) {
+std::string CabUI::EnterText(SDL_KeyboardEvent* key) {
+	std::string rtn;
 	if( key->type == SDL_KEYDOWN ){
 		// If the Unicode value is less than 0x80 then it can be converted to ASCCI text using (char)unicode.
 		if( key->keysym.unicode < 0x80 && key->keysym.unicode > 0 ){
 			//Add the character to the search term
-			searchterm.push_back((char)key->keysym.unicode);
+			rtn.push_back((char)key->keysym.unicode);
 		}
 	}
+	return rtn;
 }
 
 int CabUI::UpdateDisplayList(SDL_keysym* key) {
@@ -114,7 +116,6 @@ void CabUI::Update() {
 			//Display the game image
 			std::string image_path = location.GetImages()+game_list.GetGame();
 			SDL_Surface* image = GameImage::GenerateImage(image_path);
-			image = GameImage::ScaleImage(image, static_cast<int>(res_width*(0.70)), static_cast<int>(res_height*(0.90)));
 			CabDisplay::DisplayImage(image,screen,x_image,y_image);
 			//Display the game name
 			CabDisplay::DisplayText(game_list.GetGame(),font,screen,x_gamename,y_gamename);
@@ -148,66 +149,18 @@ int CabUI::HandleJoystick(SDL_Event* event) {
 			//Determine action based on the button pressed
 			if (event->jbutton.button == joy_button_select) {
 				switch (status) {
-					case LIST: {
-						searchterm = "";
-						//Switch out of fullscreen
-						screen = SDL_SetVideoMode(res_width,res_height, 0, SDL_SWSURFACE);
-						//Execute the command-line program
-						system(ConstructExecutableCall());
-						//Switch back to fullscreen
-						screen = SDL_SetVideoMode(res_width,res_height, 0, videoflags);
-					}
+					case LIST: 
+						Launch();
 						break;
-					case SORT:{
-						//Sort games by category
-						list<string> available_categories;
-						available_categories = categories.List();
-						list<string>::iterator it = available_categories.begin();
-						//Move to the correct category
-						int dir = (selectedcategory > 0 ? 1:-1);
-						int vel = abs(selectedcategory);
-						for (int i = 0; i < vel; i++) {
-							if (dir == 1) {
-								if (it != available_categories.end()) {
-									it++;
-								}
-								else {
-									it = available_categories.begin();
-								}
-							}
-							else {
-								if (it != available_categories.begin()) {
-									it--;
-								}
-								else {
-									it = available_categories.end();
-									it--;
-								}
-							}
-						}
-						//Check if Category == ALL
-						if (it->compare("ALL") == 0) {
-							game_list.Restore();
-						}
-						else {
-							game_list.Filter(categories.GetMatches(*it));
-							list<string> check_list = game_list.GetList();
-						}
-					}
-						game_display_list = CreateDisplayList(display_list_size);
-						status = LIST;	
-						selectedcategory = 0;
-						selectedgame = 0;
-						searchterm = "";
+					case SORT:
+						Sort();
 						break;
 					default:
 						break;
 				}
-				Update();				
 			}
 			else if (event->jbutton.button == joy_button_sort) {
 				status = SORT;
-				Update();
 			}
 			break;
 		case SDL_JOYAXISMOTION:
@@ -217,67 +170,22 @@ int CabUI::HandleJoystick(SDL_Event* event) {
 					//Left/Right
 					if (event->jaxis.value > 0) {
 						//Right
-						switch (status) {
-							case LIST:
-								game_list.MovePosition(1);
-								searchterm = "";
-								UpdateDisplayList(&event->key.keysym);
-								break;
-							case SORT:
-								selectedcategory++;
-								break;
-							default:
-								break;
-						}
-						Update();
+						Move(event,1);
 					}
 					else {
 						//Left
-						switch (status) {
-							case LIST:
-								game_list.MovePosition(-1);
-								searchterm = "";
-								UpdateDisplayList(&event->key.keysym);
-								break;
-							case SORT:
-								selectedcategory--;
-								break;
-							default:
-								cout<<"DO NOTHING"<<endl;
-								break;
-						}
-						Update();						
+						Move(event,0-1);						
 					}
 				}
 				if (event->jaxis.axis == 1) {
 					//Up/Down
 					if (event->jaxis.value < 0) {
 						//UP
-						switch (status) {
-							case LIST:
-								game_list.MovePosition(-display_list_size);
-								searchterm = "";
-								UpdateDisplayList(&event->key.keysym);
-								break;
-							case SORT:
-								break;
-							default:
-								break;
-						}
-						Update();
+						Move(event,0-display_list_size);
 					}
 					else {
 						//Down
-						switch (status) {
-							case LIST:
-								game_list.MovePosition(display_list_size);
-								searchterm = "";
-								UpdateDisplayList(&event->key.keysym);
-								break;
-							default:
-								break;
-						}
-						Update();						
+						Move(event,display_list_size);					
 					}
 				}
 			}  
@@ -288,9 +196,73 @@ int CabUI::HandleJoystick(SDL_Event* event) {
 		default:
 			break;
 	}
+	Update();
 	return 0;
 }
 
+void CabUI::Move(SDL_Event* event, int distance) {
+	switch (status) {
+		case LIST:
+			game_list.MovePosition(distance);
+			searchterm="";
+			UpdateDisplayList(&event->key.keysym);
+			break;
+		case SORT:
+			{
+				int cat_size = (distance >= 0 ? 10:-10);
+				selectedcategory+=cat_size;
+			}
+			break;
+		default:
+			break;
+	}
+}
+
+void CabUI::Launch() {
+	searchterm = "";
+	//Switch out of fullscreen
+	screen = SDL_SetVideoMode(res_width,res_height, 0, SDL_SWSURFACE);
+	//Execute the command-line program
+	system(ConstructExecutableCall());
+	//Switch back to fullscreen
+	screen = SDL_SetVideoMode(res_width,res_height, 0, videoflags);	
+}
+
+void CabUI::Sort() {
+	//Sort games by category
+	wlist available_categories;
+	available_categories.set(categories.List());
+	//Move to the correct category
+	available_categories.move(selectedcategory);
+	//Check if Category == ALL
+	if ((available_categories.get()).compare("ALL") == 0) {
+		game_list.Restore();
+	}
+	else {
+		game_list.Filter(categories.GetMatches(available_categories.get()));
+	}
+	game_display_list = CreateDisplayList(display_list_size);
+	status = LIST;	
+	selectedcategory = 0;
+	selectedgame = 0;
+	searchterm = "";
+}
+
+void CabUI::Search(SDL_Event* event) {
+	switch (status) {
+		case LIST:
+			searchterm += EnterText(&event->key);
+			game_list.Search(searchterm);
+			UpdateDisplayList(&event->key.keysym);					
+			break;
+		case SORT:
+			//Do nothing for now
+			break;
+		default:
+			break;
+	}	
+}
+						 
 int CabUI::HandleKeypress(SDL_Event* event) {
 	//Determine which key was pressed
 	switch (event->key.keysym.sym) {
@@ -298,146 +270,41 @@ int CabUI::HandleKeypress(SDL_Event* event) {
 			return 1;
 			break;
 		case SDLK_LEFT:
-			switch (status) {
-				case LIST:
-					game_list.MovePosition(-1);
-					searchterm = "";
-					UpdateDisplayList(&event->key.keysym);
-					break;
-				case SORT:
-					selectedcategory--;
-					break;
-				default:
-					cout<<"DO NOTHING"<<endl;
-					break;
-			}
-			Update();
+			Move(event,0-1);
 			break;
 		case SDLK_RIGHT:
-			switch (status) {
-				case LIST:
-					game_list.MovePosition(1);
-					searchterm = "";
-					UpdateDisplayList(&event->key.keysym);
-					break;
-				case SORT:
-					selectedcategory++;
-					break;
-				default:
-					break;
-			}
-			Update();
+			Move(event,1);
 			break;
 		case SDLK_UP:
-			switch (status) {
-				case LIST:
-					game_list.MovePosition(-display_list_size);
-					searchterm = "";
-					UpdateDisplayList(&event->key.keysym);
-					break;
-				case SORT:
-					break;
-				default:
-					break;
-			}
-			Update();
+			Move(event,0-display_list_size);
 			break;
 		case SDLK_DOWN:
-			switch (status) {
-				case LIST:
-					game_list.MovePosition(display_list_size);
-					searchterm = "";
-					UpdateDisplayList(&event->key.keysym);
-					break;
-				default:
-					break;
-			}
-			Update();
+			Move(event,display_list_size);
 			break;
 		case SDLK_SPACE:
 			switch (status) {
-				case LIST: {
-					searchterm = "";
-					//Switch out of fullscreen
-					screen = SDL_SetVideoMode(res_width,res_height, 0, SDL_SWSURFACE);
-					//Execute the command-line program
-					system(ConstructExecutableCall());
-					//Switch back to fullscreen
-					screen = SDL_SetVideoMode(res_width,res_height, 0, videoflags);
-				}
+				case LIST: 
+					Launch();
 					break;
-				case SORT:{
-					//Sort games by category
-					list<string> available_categories;
-					available_categories = categories.List();
-					list<string>::iterator it = available_categories.begin();
-					//Move to the correct category
-					int dir = (selectedcategory > 0 ? 1:-1);
-					int vel = abs(selectedcategory);
-					for (int i = 0; i < vel; i++) {
-						if (dir == 1) {
-							if (it != available_categories.end()) {
-								it++;
-							}
-							else {
-								it = available_categories.begin();
-							}
-						}
-						else {
-							if (it != available_categories.begin()) {
-								it--;
-							}
-							else {
-								it = available_categories.end();
-								it--;
-							}
-						}
-					}
-					//Check if Category == ALL
-					if (it->compare("ALL") == 0) {
-						game_list.Restore();
-					}
-					else {
-						game_list.Filter(categories.GetMatches(*it));
-						list<string> check_list = game_list.GetList();
-					}
-				}
-					game_display_list = CreateDisplayList(display_list_size);
-					status = LIST;	
-					selectedcategory = 0;
-					selectedgame = 0;
-					searchterm = "";
+				case SORT:
+					Sort();
 					break;
 				default:
 					break;
 			}
-			Update();
 			break;
 		case SDLK_BACKSPACE:
 			searchterm = "";
-			Update();
 			break;
 		case SDLK_TAB:
 			status = SORT;
-			Update();
 			break;
 		default:
 			//Assume search initiated
-			switch (status) {
-				case LIST:
-					EnterSearchTerm(&event->key);
-					game_list.Search(searchterm);
-					UpdateDisplayList(&event->key.keysym);					
-					break;
-				case SORT:
-	//				EnterSearchTerm(&event->key);
-					break;
-				default:
-					break;
-			}
-			Update();
+			Search(event);
 			break;
 	}
+	Update();
 	return 0;
 }
 
@@ -555,9 +422,9 @@ int CabUI::Init() {
 	searchterm = "";
 	selectedgame = 0;
 	selectedcategory = 0;
-	game_display_list = CreateDisplayList(display_list_size);
 	status = LIST;
 	
+	//Dynamically size dialog box based on largest string
 	std::list<std::string>* pass = new std::list<std::string>(categories.List());
 	CabDisplay::DetermineDialogSize(pass, font);
 	delete(pass);
@@ -580,6 +447,9 @@ int CabUI::Init() {
 		SDL_Quit();
 		exit(2);
 	}
+	
+	//Create the initial display list
+	game_display_list = CreateDisplayList(display_list_size);
 	
 	//Enable Unicode Support
 	SDL_EnableUNICODE(1);
@@ -618,8 +488,23 @@ int CabUI::Cleanup() {
 std::list<std::string> CabUI::CreateDisplayList(int size) {
 	std::list<std::string> games_for_list = game_list.GetList(size);
 	std::list<std::string> rtn;
+	
+	//Poll the text to determine the proper width
+	int fontheight;
+	int fontwidth;
+	int widthmax = 0;
+	
 	for (std::list<std::string>::iterator i = games_for_list.begin(); i != games_for_list.end(); i++) {
 		rtn.push_back(descriptions.Name(*i));
+		
+		if (TTF_SizeText(font, descriptions.Name(*i).c_str(), &fontwidth, &fontheight) == 0) {
+			if (fontwidth >= widthmax) {
+				widthmax = fontwidth;
+			} 
+		}		
 	}
+	
+	//Set the image size based on the width of the list
+	CabDisplay::SetImageSize(screen->w-x_image-widthmax-10,screen->h-y_image-TTF_FontLineSkip(font)-10);
 	return rtn;
 }
