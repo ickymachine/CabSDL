@@ -16,6 +16,10 @@ CabUI::CabUI() {
 	//Default resolution is 640x480
 	res_width = 480;
 	res_height = 640;
+	
+	//Joystick defaults
+	joy_button_select = 0;
+	joy_button_sort = 0;
 }
 
 int CabUI::FileExists(const char* path) {
@@ -135,6 +139,156 @@ void CabUI::Update() {
 	}
 	//Draw the screen
 	CabDisplay::UpdateDisplay(screen);
+}
+
+int CabUI::HandleJoystick(SDL_Event* event) {
+	//Determine what type of Joystick event occured
+	switch (event->type) {
+		case SDL_JOYBUTTONDOWN:
+			//Determine action based on the button pressed
+			if (event->jbutton.button == joy_button_select) {
+				switch (status) {
+					case LIST: {
+						searchterm = "";
+						//Switch out of fullscreen
+						screen = SDL_SetVideoMode(res_width,res_height, 0, SDL_SWSURFACE);
+						//Execute the command-line program
+						system(ConstructExecutableCall());
+						//Switch back to fullscreen
+						screen = SDL_SetVideoMode(res_width,res_height, 0, videoflags);
+					}
+						break;
+					case SORT:{
+						//Sort games by category
+						list<string> available_categories;
+						available_categories = categories.List();
+						list<string>::iterator it = available_categories.begin();
+						//Move to the correct category
+						int dir = (selectedcategory > 0 ? 1:-1);
+						int vel = abs(selectedcategory);
+						for (int i = 0; i < vel; i++) {
+							if (dir == 1) {
+								if (it != available_categories.end()) {
+									it++;
+								}
+								else {
+									it = available_categories.begin();
+								}
+							}
+							else {
+								if (it != available_categories.begin()) {
+									it--;
+								}
+								else {
+									it = available_categories.end();
+									it--;
+								}
+							}
+						}
+						//Check if Category == ALL
+						if (it->compare("ALL") == 0) {
+							game_list.Restore();
+						}
+						else {
+							game_list.Filter(categories.GetMatches(*it));
+							list<string> check_list = game_list.GetList();
+						}
+					}
+						game_display_list = CreateDisplayList(display_list_size);
+						status = LIST;	
+						selectedcategory = 0;
+						selectedgame = 0;
+						searchterm = "";
+						break;
+					default:
+						break;
+				}
+				Update();				
+			}
+			else if (event->jbutton.button == joy_button_sort) {
+				status = SORT;
+				Update();
+			}
+			break;
+		case SDL_JOYAXISMOTION:
+			//Detemine 
+			if ( (event->jaxis.value < -3200) || (event->jaxis.value > 3200) ) {
+				if (event->jaxis.axis == 0) {
+					//Left/Right
+					if (event->jaxis.value > 0) {
+						//Right
+						switch (status) {
+							case LIST:
+								game_list.MovePosition(1);
+								searchterm = "";
+								UpdateDisplayList(&event->key.keysym);
+								break;
+							case SORT:
+								selectedcategory++;
+								break;
+							default:
+								break;
+						}
+						Update();
+					}
+					else {
+						//Left
+						switch (status) {
+							case LIST:
+								game_list.MovePosition(-1);
+								searchterm = "";
+								UpdateDisplayList(&event->key.keysym);
+								break;
+							case SORT:
+								selectedcategory--;
+								break;
+							default:
+								cout<<"DO NOTHING"<<endl;
+								break;
+						}
+						Update();						
+					}
+				}
+				if (event->jaxis.axis == 1) {
+					//Up/Down
+					if (event->jaxis.value < 0) {
+						//UP
+						switch (status) {
+							case LIST:
+								game_list.MovePosition(-display_list_size);
+								searchterm = "";
+								UpdateDisplayList(&event->key.keysym);
+								break;
+							case SORT:
+								break;
+							default:
+								break;
+						}
+						Update();
+					}
+					else {
+						//Down
+						switch (status) {
+							case LIST:
+								game_list.MovePosition(display_list_size);
+								searchterm = "";
+								UpdateDisplayList(&event->key.keysym);
+								break;
+							default:
+								break;
+						}
+						Update();						
+					}
+				}
+			}  
+			break;
+		case SDL_JOYHATMOTION:
+			//DO NOTHING FOR NOW
+			break;
+		default:
+			break;
+	}
+	return 0;
 }
 
 int CabUI::HandleKeypress(SDL_Event* event) {
@@ -337,6 +491,10 @@ int CabUI::ProcessConfigFile() {
 		return 0;
 	}
 	
+	//Set joystick bindings
+	joy_button_select = cfg->getvalue<int>("joy_select");
+	joy_button_sort = cfg->getvalue<int>("joy_sort");
+	
 	//Everything loaded successfully
 	return 1;
 }
@@ -404,7 +562,7 @@ int CabUI::Init() {
 	CabDisplay::DetermineDialogSize(pass, font);
 	delete(pass);
 	
-	Uint32 initflags = SDL_INIT_VIDEO;  /* See documentation for details */
+	Uint32 initflags = SDL_INIT_VIDEO|SDL_INIT_JOYSTICK;  /* See documentation for details */
 	Uint8  video_bpp = 0;
 	
 	/* Initialize the SDL library */
@@ -426,6 +584,21 @@ int CabUI::Init() {
 	//Enable Unicode Support
 	SDL_EnableUNICODE(1);
 	
+	//Check for Joystick, open if available
+	SDL_InitSubSystem(SDL_INIT_JOYSTICK);
+	if (SDL_NumJoysticks() > 0) {
+		joy=SDL_JoystickOpen(0);
+		
+		if (joy) {
+			printf("Open Joystick 0\n");
+			printf("Name: %s\n", SDL_JoystickName(0));
+			printf("Number of Axes: %d\n", SDL_JoystickNumAxes(joy));
+			printf("Number of Buttons: %d\n", SDL_JoystickNumButtons(joy));
+			printf("Number of Balls: %d\n", SDL_JoystickNumBalls(joy));
+		}
+		else
+			printf("Couldn't open Joystick 0\n");
+	}
 	return 0;
 }
 
@@ -435,6 +608,10 @@ int CabUI::Cleanup() {
 	//Make sure the game_chooser font is closed
 	TTF_CloseFont(font);
 	TTF_Quit();
+	//If the joystick is opened, close it
+	if (SDL_JoystickOpened(0)) {
+		SDL_JoystickClose(joy);
+	}
 	return 0;
 }
 

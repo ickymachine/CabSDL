@@ -48,6 +48,11 @@ int main(int argc, char *argv[])
 				case SDL_KEYDOWN:
 					done = cabui.HandleKeypress(&event);
 					break;
+				case SDL_JOYBUTTONDOWN:
+				case SDL_JOYAXISMOTION:
+				case SDL_JOYHATMOTION:
+					done = cabui.HandleJoystick(&event);
+					break;
 				case SDL_QUIT:
 					done = 1;
 					break;

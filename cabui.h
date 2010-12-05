@@ -13,6 +13,7 @@
 #include "SDL.h"
 #include "SDL_ttf.h"
 #include "SDL_image.h"
+#include "SDL_joystick.h"
 #include "stdio.h"
 #include "stdlib.h"
 #include <iostream>
@@ -46,6 +47,7 @@ public:
 	int Cleanup();
 	int Init();
 	int HandleKeypress(SDL_Event* event);
+	int HandleJoystick(SDL_Event* event);
 	void Update();
 private:
 	std::list<std::string> CreateDisplayList(int size);
@@ -59,6 +61,7 @@ private:
 	SDL_Surface*	screen;
 	TTF_Font*		font;
 	Uint32			videoflags;
+	SDL_Joystick*	joy;
 	
 	//CabSDL
 	GameList		game_list;
@@ -91,6 +94,10 @@ private:
 	
 	int				x_search;
 	int				y_search;
+	
+	//Joystick bindings
+	Uint8			joy_button_select;
+	Uint8			joy_button_sort;
 };
 
 
