@@ -310,34 +310,34 @@ int CabUI::HandleKeypress(SDL_Event* event) {
 
 int CabUI::ProcessConfigFile() {
 	//Check if the default config file exists
-	if (!FileExists(CONFIG_PATH)) {
+	if (!FileExists(CabSDL::CONFIG_PATH)) {
 		//Check the local path
-		if (!FileExists(CONFIG_PATH_LOCAL)) {
+		if (!FileExists(CabSDL::CONFIG_PATH_LOCAL)) {
 			//No valid condif file found
-			cout<<"ERROR; No valid config file found at "<<CONFIG_PATH<<" or "<<CONFIG_PATH_LOCAL<<endl;
+			cout<<"ERROR; No valid config file found at "<<CabSDL::CONFIG_PATH<<" or "<<CabSDL::CONFIG_PATH_LOCAL<<endl;
 			return 1;
 		}
 		else {
-			cfg = new ConfigFile(CONFIG_PATH_LOCAL);
+			cfg = new ConfigFile(CabSDL::CONFIG_PATH_LOCAL);
 		}
 	}
 	else {
-		cfg = new ConfigFile(CONFIG_PATH);
+		cfg = new ConfigFile(CabSDL::CONFIG_PATH);
 	}
 	//	cfg->dump();
 	
 	//Validate the values from the config file
 	if ( location.SetGames(cfg->getvalue<string>("game_path")) == -1) {
-		location.SetGames(GAME_PATH); //Set to default
+		location.SetGames(CabSDL::GAME_PATH); //Set to default
 	}
 	if ( location.SetFont(cfg->getvalue<string>("font_path")) == -1) {
-		location.SetFont(FONT); //Set to default
+		location.SetFont(CabSDL::FONT); //Set to default
 	}
 	if ( location.SetCommand(cfg->getvalue<string>("command")) == -1) {
-		location.SetCommand(PROGRAM); //Set to default
+		location.SetCommand(CabSDL::PROGRAM); //Set to default
 	}
 	if ( location.SetImages(cfg->getvalue<string>("image_path")) == -1) {
-		location.SetImages(IMAGE_PATH); //Set to default
+		location.SetImages(CabSDL::IMAGE_PATH); //Set to default
 	}
 	
 	//Ensure that the specified locations exist
@@ -359,9 +359,21 @@ int CabUI::ProcessConfigFile() {
 	}
 	
 	//Set joystick bindings
-	joy_button_select = cfg->getvalue<int>("joy_select");
-	joy_button_sort = cfg->getvalue<int>("joy_sort");
+	if (int jselect = cfg->getvalue<int>("joy_select")) {
+		joy_button_select = jselect;
+	}
+	if (int jsort = cfg->getvalue<int>("joy_sort")) {
+		joy_button_sort = jsort;
+	}
 	
+	//Check if mamedb.org downloading should be disabled
+	std::string mamedbswitch = cfg->getvalue<std::string>("mamedb.org");
+	if (mamedbswitch.compare("") != 0) {
+		if (mamedbswitch.compare("true") == 0) {
+			MameDB::Enable();
+		}
+	}
+
 	//Everything loaded successfully
 	return 1;
 }

@@ -34,7 +34,8 @@ SDL_Surface* GameImage::GenerateImage(const string& game_name) {
 	// See if the image exists
 	ifstream game_image(filename.c_str());
 	if ( ! game_image.good()) {
-		MameDB::DownloadImage(game_name);
+		if (MameDB::IsEnabled())
+			MameDB::DownloadImage(game_name);
 	}
 	game_image.close();
 

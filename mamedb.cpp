@@ -18,6 +18,9 @@ struct MemoryStruct {
 	size_t size;
 };
 
+//By default do not attempt to contact mamedb.org
+bool MameDB::enabled = false;
+
 /*
  * Downloads a remote image from mamedb.com and saves it to the rom image path
  *
@@ -68,4 +71,12 @@ size_t MameDB::WriteFile(void *ptr, size_t size, size_t nmemb, FILE *stream) {
 	size_t written;
 	written = fwrite(ptr, size, nmemb, stream);
 	return written;
+}
+
+void MameDB::Enable() {
+	MameDB::enabled = true;
+}
+
+bool MameDB::IsEnabled() {
+	return MameDB::enabled;
 }

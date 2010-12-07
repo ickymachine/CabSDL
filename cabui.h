@@ -29,6 +29,7 @@
 #include "constants.h"
 #include "category.h"
 #include "description.h"
+#include "mamedb.h"
 
 #include "resize++.h"
 
