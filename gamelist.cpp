@@ -39,8 +39,8 @@ int GameList::Initialize(const string& path) {
 	//Clear out the list
 	games.clear();
 	//Check if the path exists
-	DIR *dir = opendir(path.c_str());
-	if (dir) {
+	DIR* dir;
+	if (dir = opendir(path.c_str())) {
 		struct dirent *ent;
 		while ((ent = readdir(dir)) != NULL)
 		{
@@ -53,6 +53,7 @@ int GameList::Initialize(const string& path) {
 		}
 		//Set the current current, next, previous games
 		games.sort();
+		closedir(dir);
 		return 0;
 	}
 	else {

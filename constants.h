@@ -1,11 +1,13 @@
-/*
- *  constants.h
- *  CabSDL
+// $Id$
+/**
+ *  @file constants.h
+ *  Namespace to hold all the constansts for CabSDL
  *
- *  Created by ickymachine on 11/23/10.
- *  Copyright 2010. All rights reserved.
- *
+ *  @author Matthew Capodarco
  */
+// $Log$
+
+/// Namespace CabSDL to declare and initialize any constant values used by CabSDL.  Includes default path locations.
 
 #ifndef CABSDL_CONSTANTS
 #define CABSDL_CONSTANTS

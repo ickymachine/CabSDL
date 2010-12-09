@@ -71,7 +71,7 @@ int CabDisplay::BlankDisplay(SDL_Surface* display) {
 }
 
 
-int CabDisplay::DisplayList(list<string>& games, int selected, TTF_Font* font, SDL_Surface* display, int x, int y) {
+int CabDisplay::DisplayList(list<string>& games, const int selected, TTF_Font* font, SDL_Surface* display, int x, int y) {
 	SDL_Rect destination;
 	
 	//Display the list of game names to the screen
@@ -102,7 +102,7 @@ int CabDisplay::DisplayList(list<string>& games, int selected, TTF_Font* font, S
 			if (!(text_surface = TTF_RenderText_Solid(font, games_pos->c_str(), *d_color))) {
 				//Handle Error
 				cout<<"CabDisplay::DisplayList; Couldn't create text_surface!"<<endl;
-				return -1;
+				return -2;
 			}
 			else {
 				destination.x = x-text_surface->w;
@@ -117,7 +117,7 @@ int CabDisplay::DisplayList(list<string>& games, int selected, TTF_Font* font, S
 	return 0;	
 }
 
-int CabDisplay::DisplayCategoryBox(list<string>* categories, int selected, TTF_Font* font, SDL_Surface* display, int x, int y) {
+int CabDisplay::DisplayCategoryBox(list<string>* categories, const int selected, TTF_Font* font, SDL_Surface* display, int x, int y) {
 	int xpos = x-CabDisplay::dialog_width/2;
 	int ypos = y-CabDisplay::dialog_height/2;
 	

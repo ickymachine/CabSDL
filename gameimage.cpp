@@ -63,22 +63,3 @@ SDL_Surface* GameImage::ScaleImage(SDL_Surface* image, int width, int height) {
 	//set the image to the scaled result
 	return SDL_Resize(image, width, height);;
 }
-
-SDL_Color GameImage::GetPixel(SDL_Surface* image, int x, int y) {
-	//Lock the image before inspecting the pixels pointer
-	SDL_LockSurface(image);
-	SDL_Color color;
-	Uint32 col = 0;
-	char* position = (char*)image->pixels;
-	//Move to the proper x,y coordinate
-	position += (image->pitch * y);
-	position += (image->format->BytesPerPixel * x);
-	//Get the pixel data
-	//copy pixel data
-	memcpy (&col, position, image->format->BytesPerPixel);
-	//Convert color
-	SDL_GetRGB(col, image->format, &color.r, &color.g, &color.b);
-	//Unlock the image
-	SDL_UnlockSurface(image);
-	return color;
-}

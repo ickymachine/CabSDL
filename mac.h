@@ -1,11 +1,14 @@
-/*
- *  mac.h
- *  CabSDL
+// $Id$
+/**
+ *  @file mac.h
+ *  Allow access to items in the Resources path of the .app package
  *
- *  Created by ickymachine on 12/1/10.
- *  Copyright 2010. All rights reserved.
- *
+ *  @author Matthew Capodarco
  */
+// $Log$
+
+/// Provide access to items contained in the Resources path of the .app package.
+
 
 #ifndef MAC_H
 #define MAC_H
@@ -15,6 +18,11 @@
 
 class App {
 public:
+	/**
+		Return the path to the Resources folder in the .app package
+	 
+		@return String containing the path to .app/Contents/Resources
+	 */
 	static std::string ResourcesPath();		
 };
 

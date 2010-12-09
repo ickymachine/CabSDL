@@ -1,11 +1,13 @@
-/*
- *  cabui.h
- *  CabSDL
+// $Id$
+/**
+ *  @file cabui.h
+ *  Primary class for CabSDL
  *
- *  Created by ickymachine on 12/2/10.
- *  Copyright 2010. All rights reserved.
- *
+ *  @author Matthew Capodarco
  */
+// $Log$
+
+/// Primary class for CabSDL, handles all data storage, user interaction, and display.
 
 #ifndef CABUI_H
 #define CABUI_H
