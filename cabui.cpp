@@ -77,7 +77,7 @@ int CabUI::Execute() {
 	SDL_Event event;
 	
 	while (running) {
-		if (SDL_PollEvent(&event)) {
+		if (SDL_WaitEvent(&event)) {
 			OnEvent(&event);
 		}
 		Render();
