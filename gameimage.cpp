@@ -45,7 +45,7 @@ SDL_Surface* GameImage::GenerateImage(const string& game_name) {
 	if (image == NULL) {
 		//Load and display default image instead
 		std::string filepath = "default.png";
-		cout<<"ERROR; GameImage::GenerateImage; Couldn't load image at "<<filename<<endl;
+		std::cerr<<"Couldn't load image at "<<filename<<std::endl;
 		
 #ifdef __APPLE__
 		filepath = App::ResourcesPath()+"/default.png";
@@ -53,7 +53,7 @@ SDL_Surface* GameImage::GenerateImage(const string& game_name) {
 		image = IMG_Load(filepath.c_str());
 		if (image == NULL) {
 			//couldn't load default for some reason
-			cout<<"ERROR; GameImage::Generate; Couldn't load default.png"<<endl;
+			std::cerr<<"Couldn't load default.png"<<std::endl;
 		}
 	}
 	return image;

@@ -39,7 +39,7 @@ public:
 	 Generates the list of games based on .zip files contained in the directory (path)
 	 
 	 @param[in]	path	Path to the list of .zip game files
-	 @return Error code: 0 No errors; 1 Could not open path for reading
+	 @return Error code
 	 */
 	int Initialize(const string& path);	//generate the rom list based on the directory provided
 	/**

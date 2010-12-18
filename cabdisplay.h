@@ -42,9 +42,10 @@ public:
 	 @param[in,out]	*display SDL_Surface to render the text on
 	 @param[in]	x Integer position to display the text
 	 @param[in] y Integer position to display the text
+	 @param[in] highlight boolean to set whether the text should be highlight color
 	 @return Error code: 0 No error
 	 */
-	static int DisplayText(const string& text, TTF_Font* font, SDL_Surface* display, int x, int y);
+	static int DisplayText(const string& text, TTF_Font* font, SDL_Surface* display, int x, int yint, int highlight = false);
 	
 	/**
 	 Fill the screen using a black rectangle.
@@ -65,19 +66,19 @@ public:
 	/**
 	 Display a list of text to the screen with top/left corner at position x,y
 	 
-	 @param[in]		&games List of strings to display
+	 @param[in]		games List of strings to display
 	 @param[in,out]	*font TTF_Font used to render the text.
 	 @param[in,out]	*display SDL_Surface to display the text on.
 	 @param[in]	x Integer position to display the image
 	 @param[in]	y Integer position to display the image
 	 @return Error code: 0 No error; -1 Failed to load font; -2 Failed to render text
 	 */
-	static int DisplayList(list<string>& games, const int selected, TTF_Font* font, SDL_Surface* display, int x, int y);
+	static int DisplayList(const list<string>& games, const int selected, TTF_Font* font, SDL_Surface* display, int x, int y);
 	
 	/**
 	 Display a dialog box containing a list of categories centered at position x,y
 	 
-	 @param[in]		*categories List of string values containing the available categories
+	 @param[in]		categories List of string values containing the available categories
 	 @param[in]		selected The index value of the selected category
 	 @param[in,out]	*font TTF_Font used to render the text.
 	 @param[in,out]	*display SDL_Surface to display the dialog on.
@@ -85,16 +86,16 @@ public:
 	 @param[in]	y Integer position to display the image
 	 @return Error code: 0 No error; -1 Could not generate list surface
 	 */	
-	static int DisplayCategoryBox(list<string>* categories, const int selected, TTF_Font* font, SDL_Surface* display, int x, int y);
+	static int DisplayCategoryBox(const list<string>& categories, const int selected, TTF_Font* font, SDL_Surface* display, int x, int y);
 		
 	/**
 	 Determine the size of the dialog box needed to display the list of text
 	 
-	 @param[in]	*text List of string values to be displayed in the dialog.
+	 @param[in]	text List of string values to be displayed in the dialog.
 	 @param[in,out]	*font TTF_Font that will be used to render the text.
 	 @return Error code: 0 No error
 	 */
-	static int DetermineDialogSize(list<string>* text, TTF_Font* font);
+	static int DetermineDialogSize(const list<string>& text, TTF_Font* font);
 	
 	/**
 	 Set the height and width of the image that is displayed using DisplayImage
@@ -104,6 +105,16 @@ public:
 	 @return Error code: 0 No error
 	 */
 	static int SetImageSize(int width, int height);
+	/**
+	 Display a dialog box to the screen with an alert message
+	 
+	 @param[in]		&alert		String value to be displayed in the dialog
+	 @param[in]		*font		TTF_Font used to render the text
+	 @param[in,out] *display	SDL_Surface to render the dialog and text on
+	 @param[in]		x			Position on the display, left
+	 @param[in]		y			Position of the display, top
+	 */
+	static int DisplayAlertDialog(const string& alert, TTF_Font* font, SDL_Surface* display, int x, int y);
 private:
 	
 	/**
@@ -122,6 +133,18 @@ private:
 	 The value to scale the image height to
 	 */
 	static int image_height;
+	/**
+	 The RGB color of the background
+	 */
+	static SDL_Color background_color;
+	/**
+	 The RGB color of normal text
+	 */
+	static SDL_Color normal_text_color;
+	/**
+	 The RBG color of highlighted text
+	 */
+	static SDL_Color highlighted_text_color;
 };
 
 #endif

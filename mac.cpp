@@ -8,6 +8,7 @@
  */
 
 #include "mac.h"
+#include <iostream>
 
 std::string App::ResourcesPath() {
 	std::string rtn;
@@ -17,7 +18,7 @@ std::string App::ResourcesPath() {
 	if (!CFURLGetFileSystemRepresentation(resourcesURL, TRUE, (UInt8 *)path, PATH_MAX))
 	{
 		// error!
-		printf("Error establishing path of .app Resources folder.");
+		std::cerr<<"Error establishing path of .app Resources folder."<<std::endl;
 	}
 	CFRelease(resourcesURL);
 	rtn = path;	

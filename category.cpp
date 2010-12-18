@@ -22,8 +22,6 @@ Category::Category() {
 	category_games.clear();
 	category_types.clear();
 	
-	category_types.push_back("ALL");
-	
 	//Load the category information from the local file categories.txt
 	std::string filepath = "categories.txt";
 #ifdef __APPLE__
@@ -32,7 +30,7 @@ Category::Category() {
 	std::ifstream catlist(filepath.c_str());
 	if ( ! catlist.good()) {
 		//File Does Not Exist
-		printf("Category; Could not open file categories.txt");
+		std::cerr<<"Category; Could not open file categories.txt"<<std::endl;
 	}
 	//Parse the file
 	if (catlist.is_open()) {
@@ -48,12 +46,10 @@ Category::Category() {
 			std::string cat = line.substr(pos+1,line.length()-2-pos);
 			//Add the key,data pair to the map
 			game_categories.insert(std::pair<std::string,std::string>(game,cat));
-			//			std::cout<<"GAME "<<game<<" CAT "<<cat<<std::endl;
 			
 			//Check if the category is in the list
 			if (category_types.empty()) {
 				category_types.push_back(cat);
-				//				std::cout<<"Initial; Adding "<<cat<<" to list"<<std::endl;
 			}
 			else {
 				int found = 0;
@@ -62,7 +58,6 @@ Category::Category() {
 					//Check if the category exists
 					if (cat.compare(*it) == 0) {
 						found = 1;
-						//						std::cout<<"FOUND A MATCH FOR "<<cat<<" in "<<*it<<std::endl;
 					}
 					it++;
 				}
@@ -70,11 +65,16 @@ Category::Category() {
 					//The category was not found so add it to the list
 					if (cat.length() > 0) {
 						category_types.push_back(cat);
-						//						std::cout<<"Adding "<<cat<<" to list"<<std::endl;
 					}
 				}
 			}
 		}
+		
+		category_types.sort();
+		
+		//Include the ALL category to reset the list of games
+		category_types.push_front("ALL");
+
 		catlist.close();
 	}
 	//construct the reverse map

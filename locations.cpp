@@ -10,16 +10,7 @@
 #include "locations.h"
 #include <iostream>
 #include <fstream>
-
-//GLOBALS
-extern const char* CONFIG_PATH;
-extern const char* CONFIG_PATH_LOCAL;
-extern const char* GAME_PATH;
-extern const char* FONT;
-extern const char* IMAGE_PATH;
-extern const char* PROGRAM;
-
-using namespace std;
+#include "constants.h"
 
 Locations::Locations() {
 
@@ -32,33 +23,33 @@ Locations::~Locations() {
 int Locations::SetGames(const std::string& name) {
 	if (name != "") {
 		games = name;
-		return 0;
+		return Error::NO_ERROR;
 	}
-	return -1;
+	return Error::EMPTY_STRING;
 }
 
 int Locations::SetFont(const std::string& name) {
 	if (name != "") {
 		font = name;
-		return 0;
+		return Error::NO_ERROR;
 	}
-	return -1;
+	return Error::EMPTY_STRING;
 }
 
 int Locations::SetCommand(const std::string& name) {
 	if (name != "") {
 		command = name;
-		return 0;
+		return Error::NO_ERROR;
 	}
-	return -1;
+	return Error::EMPTY_STRING;
 }
 
 int Locations::SetImages(const std::string& name) {
 	if (name != "") {
 		images = name;
-		return 0;
+		return Error::NO_ERROR;
 	}
-	return -1;
+	return Error::EMPTY_STRING;
 }
 
 std::string Locations::GetCommand() const {

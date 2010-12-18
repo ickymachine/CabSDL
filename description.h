@@ -35,11 +35,37 @@ public:
 	 @return list<string> containing all the descriptions loaded from descriptions.txt
 	 */
 	std::list<std::string> List();
+	/**
+	 Find the game name associated with a description
+	 
+	 @param[in]	description	String value containing the description to search for
+	 @return associated game name
+	 */
+	std::string Desc(const std::string& desc);
+	/**
+	 Search the map for a game name that partly matches a description
+	 
+	 @param[in]		search_term		String value to compare to descriptions
+	 @return		associated game name
+	 */
+	std::string Search(const std::string& search_term);
 private:
 	/**
 	 Container for the game name / description associations.  Key = name; Data = description
 	 */
 	std::map<std::string, std::string> descriptions;
+	/**
+	 Container for description / game name association.  Key = description; Data = name
+	 */
+	std::map<std::string, std::string> names;
+	/**
+	 Container for description / game name association.  All lowercase for faster searching.  Key = description(lowercase); Data = name
+	 */
+	std::map<std::string, std::string> lowercase_names;
+	/**
+	 Iterator for the position the previous search ended at 
+	 */
+	std::map<std::string, std::string>::iterator _prev;
 };
 
 #endif

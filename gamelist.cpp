@@ -11,16 +11,13 @@
 #include <dirent.h>
 #include <iostream>
 #include <sys/types.h>
-#include <string>
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
-#include "category.h"
+#include "constants.h"
 
 GameList::GameList() {
 	games.clear();
 	games_full.clear();
-	//_current = games.begin();
 }
 
 void GameList::Copy(const list<string>& copy) {
@@ -37,9 +34,9 @@ GameList::~GameList() {
 
 int GameList::Initialize(const string& path) {
 	//Clear out the list
-	games.clear();
+	games_full.clear();
 	//Check if the path exists
-	DIR* dir;
+	DIR* dir = NULL;
 	if (dir = opendir(path.c_str())) {
 		struct dirent *ent;
 		while ((ent = readdir(dir)) != NULL)
@@ -47,19 +44,16 @@ int GameList::Initialize(const string& path) {
 			string entry (ent->d_name);
 			if (entry.find(".zip") != string::npos) {
 				//clip off the extension
-				games.push_back(entry.substr(0,entry.find(".zip")));
 				games_full.push_back(entry.substr(0,entry.find(".zip")));
 			}
 		}
-		//Set the current current, next, previous games
-		games.sort();
+		games_full.sort();
+		games.set(games_full.list());
 		closedir(dir);
-		return 0;
+		return Error::NO_ERROR;
 	}
-	else {
-		cout << "GameList::Initialize; Could not open: "<<path<<" for reading."<<endl;
-	}	
-	return 1; //Assume failure
+	std::cerr<<"Could not open: "<<path<<" for reading."<<std::endl;
+	return Error::FILE_DOES_NOT_EXIST;
 }
 
 string GameList::GetGame() {
