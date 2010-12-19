@@ -50,7 +50,6 @@ Description::Description() {
 		}
 		descfile.close();
 	}	
-	_prev = lowercase_names.begin();
 }
 
 std::string Description::Name(const std::string& game_name) {
@@ -82,30 +81,11 @@ std::string Description::Desc(const std::string& desc) {
 }
 
 std::string Description::Search(const std::string& search_term) {
-	//Declare variable to return
 	std::string rtn = "";
-	//Iterate through the map and find the closest match to search_term
-	std::map<std::string, std::string>::iterator it = _prev;
-	bool done = false;
-	int count = 1;
-	int max = lowercase_names.size();
-	while (!done) {
-		if (search_term.compare(it->first.substr(0,search_term.size())) == 0) {
-			//Found a match
-			rtn = it->second;
-			done = true;
-			_prev = it;
-		}
-		it++;
-		if (it == lowercase_names.end()) {
-			it = lowercase_names.begin();
-		}
-		count++;
-		if (count == max) {
-			//Searched whole list, no match
-			done = true;
-			_prev = lowercase_names.begin();
-		}
-	}
+	//Find the 1st closest match
+	std::map<std::string, std::string>::iterator it = lowercase_names.lower_bound(search_term);
+	if (it != lowercase_names.end())
+		//Return the associated gamename
+		rtn = it->second;
 	return rtn;
 }

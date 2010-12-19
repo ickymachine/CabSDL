@@ -77,10 +77,14 @@ int CabUI::Execute() {
 	SDL_Event event;
 	
 	while (running) {
-		if (SDL_WaitEvent(&event)) {
+		if (SDL_PollEvent(&event)) {
 			OnEvent(&event);
+			Render();
+			//Clear the Event Queue to prevent keyboard mashing
+			while (SDL_PollEvent(&event)) {
+				//Do nothing
+			}
 		}
-		Render();
 		SDL_Delay(1);
 	}
 	
@@ -519,9 +523,9 @@ int CabUI::Init() {
 	y_list = 5;
 	x_gamename = res_width/50;
 	y_gamename = res_height-5-fontheight;
-	x_category = res_width/50*8;
+	x_category = res_width/50*10;
 	y_category = res_height-5-fontheight;
-	x_search = res_width/50*20;
+	x_search = res_width/50*30;
 	y_search = res_height-5-fontheight;
 	display_list_size = res_height/TTF_FontLineSkip(font)-2;
 	

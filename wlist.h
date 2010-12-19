@@ -15,6 +15,7 @@
 #include <list>
 #include <string>
 #include "stdlib.h"
+#include <iostream>
 
 /**
  *	List of string objects.  Element access by move(int) function to position the _current iterator.
@@ -31,7 +32,6 @@ public:
 	wlist() {
 		data.clear();
 		_current = data.begin();
-		_prev_search = data.begin();
 	}
 	/**
 	   Destructor.  Clears the list.
@@ -67,6 +67,7 @@ public:
 	void set(const std::list<std::string>& values) {
 		data.clear();
 		data = values;
+		data.sort();
 		_current = data.begin();
 	}
 	/**
@@ -117,26 +118,25 @@ public:
 		@param[in]	searchterm String value to match against the content of the list
 	 */
 	void search(const std::string& searchterm) {
-		std::list<std::string>::iterator i = _prev_search;
+		std::list<std::string>::iterator i = _current;
 		bool done = false;
 		int count = 1;
 		int max = data.size();
 		while (!done) {
 			//If the substring of the data matches searchterm, it's a match
-			std::string cmp = i->substr(0,searchterm.size());
+			std::string cmp = *i;//->substr(0,searchterm.size());
 			//convert to lowercase
 			for (int pos = 0; pos < cmp.size(); pos++) {
 				cmp[pos] = tolower(cmp[pos]);
 			}
-			if ((cmp).compare(searchterm) == 0) {
-				//Found a match
+			if ( (searchterm[0] == cmp[0]) && (searchterm.compare(cmp) < 0) ) {
+				//Found the closest match
 				done = true;
 				//Move to the found game
 				_current = i;
-				//Set the found match to this game
-				_prev_search = i;
 			}
 			i++;
+			//Loop around the the beginning if necessary
 			if (i == data.end()) {
 				i = data.begin();
 			}
@@ -144,7 +144,6 @@ public:
 			if (count >= max) {
 				//Didn't find a match, but searched the whole list
 				done = true;
-				_prev_search = i;
 			}
 		}
 	}
@@ -165,10 +164,6 @@ private:
 	 	Will wrap around to --end() and begin() if decremented or incremented past begin or end.
 	 */
 	std::list<std::string>::iterator _current;
-	/**
-	 Iterator pointing at the last found element in the list
-	 */
-	std::list<std::string>::iterator _prev_search;
 };
 
 #endif

@@ -62,10 +62,6 @@ private:
 	 Container for description / game name association.  All lowercase for faster searching.  Key = description(lowercase); Data = name
 	 */
 	std::map<std::string, std::string> lowercase_names;
-	/**
-	 Iterator for the position the previous search ended at 
-	 */
-	std::map<std::string, std::string>::iterator _prev;
 };
 
 #endif
