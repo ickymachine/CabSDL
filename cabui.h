@@ -30,7 +30,6 @@
 #include "cabdisplay.h"
 #include "constants.h"
 #include "category.h"
-#include "description.h"
 #include "mamedb.h"
 #include "wlist.h"
 #include "event.h"
