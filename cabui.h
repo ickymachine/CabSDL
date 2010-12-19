@@ -101,9 +101,8 @@ private:
 	SDL_Joystick*	joy; //Player1 joystick
 	
 	//CabSDL
-	GameList		game_list;
+	GameList*		game_list;
 	Category		categories;
-	Description		descriptions;
 	Locations		location;
 	DisplayState	status;
 	DisplayState	previous_status;

@@ -17,6 +17,7 @@ CabUI::CabUI() {
 	screen = NULL;
 	font = NULL;
 	joy = NULL;
+	game_list = NULL;
 	
 	//Video Mode
 	videoflags = SDL_SWSURFACE;
@@ -115,16 +116,16 @@ void CabUI::RenderDisplayList() {
 
 void CabUI::RenderGameImage() {
 	//Display the game image
-	SDL_Surface* image = GameImage::GenerateImage(location.GetImages()+game_list.GetGame());
+	SDL_Surface* image = GameImage::GenerateImage(location.GetImages()+game_list->GetGame());
 	CabDisplay::DisplayImage(image,screen,x_image,y_image);	
 }
 
 void CabUI::RenderGameInfo() {
 	bool highlight = (status == SEARCH);
 	//Display the game name
-	CabDisplay::DisplayText(game_list.GetGame(),font,screen,x_gamename,y_gamename);
+	CabDisplay::DisplayText(game_list->GetGame(),font,screen,x_gamename,y_gamename);
 	//Display the game category
-	CabDisplay::DisplayText(categories.GetCategory(game_list.GetGame()),font,screen,x_category,y_category);
+	CabDisplay::DisplayText(categories.GetCategory(game_list->GetGame()),font,screen,x_category,y_category);
 	//Display the search term
 	CabDisplay::DisplayText("SEARCH: "+searchterm,font,screen, x_search, y_search,highlight);
 }
@@ -142,19 +143,16 @@ void CabUI::RenderCategoryDialog() {
 }
 
 std::list<std::string> CabUI::CreateDisplayList(int size) {
-	std::list<std::string> games_for_list = game_list.GetList(size);
-	std::list<std::string> rtn;
+	std::list<std::string> rtn = game_list->GetList(size);
 	
 	//Poll the text to determine the proper width
 	int fontheight;
 	int fontwidth;
 	int widthmax = 0;
 	
-	for (std::list<std::string>::iterator i = games_for_list.begin(); i != games_for_list.end(); i++) {
-		rtn.push_back(descriptions.Name(*i));
-		
+	for (std::list<std::string>::iterator i = rtn.begin(); i != rtn.end(); i++) {
 		//Check the width of the font, finding the greatest value
-		if (TTF_SizeText(font, descriptions.Name(*i).c_str(), &fontwidth, &fontheight) == 0) {
+		if (TTF_SizeText(font, i->c_str(), &fontwidth, &fontheight) == 0) {
 			if (fontwidth >= widthmax) {
 				widthmax = fontwidth;
 			} 
@@ -369,7 +367,7 @@ void CabUI::Move(int distance) {
 		case LIST: 
 		{
 			searchterm="";
-			game_list.MovePosition(distance);
+			game_list->MovePosition(distance);
 			switch (distance) {
 				case -1:
 					if (selectedgame == 0) {
@@ -430,14 +428,14 @@ void CabUI::Launch() {
 void CabUI::Sort() {
 	//Check if Category == ALL
 	if ((available_categories.get()).compare("ALL") == 0) {
-		game_list.Restore();
+		game_list->Restore();
 		display_list_size = res_height/TTF_FontLineSkip(font)-2;
 	}
 	else {
 		//Filter the game_list keeping only the games that match the selected category
-		game_list.Filter(categories.GetMatches(available_categories.get()));
-		if (game_list.Size() < display_list_size) {
-			display_list_size = game_list.Size();
+		game_list->Filter(categories.GetMatches(available_categories.get()));
+		if (game_list->Size() < display_list_size) {
+			display_list_size = game_list->Size();
 		} 
 		else {
 			display_list_size = res_height/TTF_FontLineSkip(font)-2;
@@ -461,10 +459,8 @@ void CabUI::Search(Uint16 unicode) {
 	switch (previous_status) {
 		case LIST:
 		{
-			//Search the descriptions to locate the closes match
-			std::string closest_game_name = descriptions.Search(searchterm);			
 			//Search the game list to find the closest match
-			game_list.Search(closest_game_name);
+			game_list->Search(searchterm);
 			//Update the display list to show the closest match
 			game_display_list = CreateDisplayList(display_list_size);
 			selectedgame = 0;
@@ -486,7 +482,7 @@ const char* CabUI::ConstructExecutableCall() {
 	//Add any parameters
 	call+=executable_arguments+" ";
 	//Add the game name to the end of the call
-	call+=game_list.GetGame()+".zip";
+	call+=game_list->GetGame()+".zip";
 	return call.c_str();
 }
 
@@ -530,10 +526,10 @@ int CabUI::Init() {
 	display_list_size = res_height/TTF_FontLineSkip(font)-2;
 	
 	//Ensure that the size of the game list does not exceed the list size
-	game_list.Initialize(location.GetGames());
-	if (game_list.Size() < display_list_size) {
+	game_list = new GameList(location.GetGames());
+	if (game_list->Size() < display_list_size) {
 		//limit display list to the size of the game list
-		display_list_size = game_list.Size();
+		display_list_size = game_list->Size();
 	}
 	
 	//Initialize the list of available categories
@@ -686,6 +682,9 @@ int CabUI::ProcessConfigFile() {
 }
 
 int CabUI::Cleanup() {
+	//Delete any assigned pointers
+	if (game_list != NULL)	delete(game_list);
+	
 	//Free the screen
 	SDL_FreeSurface(screen);
 	//Make sure the game_chooser font is closed

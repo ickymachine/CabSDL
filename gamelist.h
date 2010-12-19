@@ -22,26 +22,15 @@ using namespace std;
 class GameList {
 public:
 	/**
-	 Default Constructor
+	 Construct the list of games pased on the supplied directory path
+	 
+	 @param[in]		&path		String.  Directory to game .zip files.
 	 */
-	GameList();	//default constructor
+	GameList(const string& path);	
 	/**
 	 Default Destructor
 	 */	
 	~GameList();
-	/**
-	 Replace the list of games with copy
-	 
-	 @param[in] &copy	list<string> containing the new contents for games
-	 */
-	void Copy(const list<string>& copy);
-	/**
-	 Generates the list of games based on .zip files contained in the directory (path)
-	 
-	 @param[in]	path	Path to the list of .zip game files
-	 @return Error code
-	 */
-	int Initialize(const string& path);	//generate the rom list based on the directory provided
 	/**
 	 Return the current game
 	 
@@ -49,14 +38,14 @@ public:
 	 */
 	string GetGame();
 	/**
-	 Return a list of games with size num
+	 Return a list of Descriptions with size num
 	 
 	 @param[in]	num Number of games to get
 	 @return list<string> containing num items from the games list
 	 */
 	list<string> GetList(int num);	//Get a list of num games
 	/**
-	 Return the entire list of games
+	 Return the entire list of Descriptions
 	 
 	 @return list<string> games
 	 */
@@ -68,11 +57,11 @@ public:
 	 */	 
 	void MovePosition(int num);
 	/**
-	 Search the games container to see if there is a match
+	 Search for container to see if there is a match for the provided description
 	 
 	 @param[in]	gamename	String value to compare against
 	 */
-	void Search(const string& gamename);
+	void Search(const string& description);
 	/**
 	 Returns the size of the games object, the number of games in the list
 	 
@@ -98,6 +87,19 @@ private:
 	 Container containing the entire unfiltered list of loaded game names
 	 */
 	wlist games_full;
+	/**
+	 Container for the game name / description associations.  Key = name; Data = description
+	 */
+	std::map<std::string, std::string> descriptions;
+	/**
+	 Container for description / game name association.  Key = description; Data = name
+	 */
+	std::map<std::string, std::string> names;
+	/**
+	 Container for description / game name association.  All lowercase for faster searching.  Key = description(lowercase); Data = name
+	 */
+	std::map<std::string, std::string> l_names;
+	
 };
 
 #endif
